@@ -42,3 +42,5 @@ sftp-config.json
 
 # ignore compiled versions of plugin 
 *.smx
+
+spcomp
