@@ -28,7 +28,6 @@ public Plugin:trueskill =
 	version = "0.0",
 	url = "http://yusufali.ca/repos/tf2Skill.git/"
 };
-
 public OnPluginStart(){
 
 	/* bind methods to game events */
@@ -38,47 +37,66 @@ public OnPluginStart(){
 	HookEvent("round_end",Event_rEnd);
 }
 
-/* methods for game events */
+
+
+
+
+/* METHODS FOR GAME EVENTS */
+
+/*
+	- keep tract of client playing time
+	- update client playing time
+*/
 public Event_pTeam(Handle:event, const String:namep[], bool:dontBroadcast){
-	/*
-		- keep tract of client playing time
-		- update client playing time
-	*/
+	
 }
+
+/*
+	- store kills and deaths
+	 - for statistics purposes
+	 - no affect on ranking,
+	   just to make everyone happy
+*/
 public Event_pDeath(Handle:event, const String:namep[], bool:dontBroadcast){
-	/*
-		- store kills and deaths
-		 - for statistics purposes
-		 - no affect on ranking,
-		   just to make everyone happy
-	*/
+	
 }
+
+/*
+	- reset arrays, grab client information
+	 - structure data
+*/
 public Event_rStart(Handle:event, const String:namep[], bool:dontBroadcast){
-	/*
-		- reset arrays, grab client information
-		 - structure data
-	*/
+	
 }
+
+/*
+	- finalize client data, playing time, teams etc
+	 - post data to trueskill implementation
+*/
 public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
-	/*
-		- finalize client data, playing time, teams etc
-		 - post data to trueskill implementation
-	*/
+	
 }
 
 
-/* registered action commands */
+
+
+
+
+/* REGISTERED ACTION COMMANDS */
+
+/*
+	gets player rank from trueskill
+	database implementation
+*/
 public Action:playRank(client, args){
-	/*
-		gets player rank from trueskill
-		database implementation
-	*/
 	return Plugin_Handled;
 }
+
+/*
+	shows top10 players from trueskill
+	database implementation from get request
+*/
 public Action:topTen(client,args){
-	/*
-		shows top10 players from trueskill
-		database implementation from get request
-	*/
+	
 	return Plugin_Handled;
 }
