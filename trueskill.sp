@@ -3,7 +3,6 @@
 /*
 delcare plublic variable information
 */
-
 public Plugin:trueskill = 
 {
 	name = "TrueSkill Ranking System",
@@ -14,16 +13,27 @@ public Plugin:trueskill =
 };
 
 public OnPluginStart(){
-	
+
+	/* bind methods to game events */
+	HookEvent("player_team",Event_pTeam);
+	HookEvent("player_death", Event_pDeath);
+	HookEvent("round_start", Event_rStart);
+	HookEvent("round_end",Event_rEnd);
 }
 
-/* required events to listen 
-	- player team
-	- player death
-	- round start
-	- round end
-*/
+/* methods for game events */
+public Event_pTeam(Handle:event, const String:namep[], bool:dontBroadcast){
 
+}
+public Event_pDeath(Handle:event, const String:namep[], bool:dontBroadcast){
+
+}
+public Event_rStart(Handle:event, const String:namep[], bool:dontBroadcast){
+
+}
+public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
+
+}
 
 
 /* registered action commands */
