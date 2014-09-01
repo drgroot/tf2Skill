@@ -34,8 +34,8 @@ public OnPluginStart(){
 	HookEvent("player_team",Event_pTeam);
 	HookEvent("player_death", Event_pDeath);
 	HookEvent("player_disconnect", Event_pDisconnect);
-	HookEvent("round_start", Event_rStart);
-	HookEvent("round_end",Event_rEnd);
+	HookEvent("teamplay_round_start", Event_rStart);
+	HookEvent("teamplay_round_win",Event_rEnd);
 }
 
 
@@ -59,7 +59,7 @@ public Event_pTeam(Handle:event, const String:namep[], bool:dontBroadcast){
 	   just to make everyone happy
 */
 public Event_pDeath(Handle:event, const String:namep[], bool:dontBroadcast){
-	
+		
 }
 
 /*
@@ -67,7 +67,7 @@ public Event_pDeath(Handle:event, const String:namep[], bool:dontBroadcast){
 	- update client playing time
 */
 public Event_pDisconnect(Handle:event, const String:namep[], bool:dontBroadcast){
-
+	
 }
 
 /*
