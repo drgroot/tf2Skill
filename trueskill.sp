@@ -7,9 +7,15 @@ trueskill ranking system.
 
 Author: Yusuf Ali
 
+requires:
+ System2 for advanced shell commands
+ https://forums.alliedmods.net/showthread.php?t=146019
+
+
 */
 
 #include <sourcemod>
+#include <system2>
 
 /*
 delcare plublic variable information
