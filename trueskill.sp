@@ -17,12 +17,11 @@ requires:
 #include <sourcemod>
 #include <system2>
 
-new Handle:timers;
 new Handle:players;
 
-new gameDuration = 0;
+new Float:gameDuration = 0;
 new gameEnd = 0;
-new timerInterval = 0.5;
+new Float:timerInterval = 0.5;
 
 /*
 delcare plublic variable information
@@ -43,6 +42,8 @@ public OnPluginStart(){
 	HookEvent("player_disconnect", Event_pDisconnect);
 	HookEvent("teamplay_round_start", Event_rStart);
 	HookEvent("teamplay_round_win",Event_rEnd);
+
+	players = CreateArray(5,0);
 }
 
 
@@ -82,19 +83,18 @@ public Event_pDisconnect(Handle:event, const String:namep[], bool:dontBroadcast)
 	 - structure data
 */
 public Event_rStart(Handle:event, const String:namep[], bool:dontBroadcast){
-	gameDuration=0; gameEnd = 0;
-	
-	//reset arrays
-	timers = CreateArray(1,0);
-	players = CreateArray(5,0); // 0 steamID, 1 kills, 2 red, 3 blue, 4 deaths
+	gameDuration=0.0; gameEnd = 0; ClearArray(players); 
 
 	// start the timer for the game
 	CreateTimer(timerInterval, incrementGameTimer, _, TIMER_REPEAT);
 
 	//loop through all players that are alive
 	for(new i=1;i<= MaxClients;i++){
-		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){
+		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){	
 			
+			// populates array at index i, with client data 
+			SetArrayArray(players,i, {0, 0,0,0});
+			SetArrayCell(players,i, GetSteamAccountID(i,true) , 0, false);		
 		}
 	}
 
