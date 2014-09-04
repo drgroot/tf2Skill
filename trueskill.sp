@@ -20,6 +20,7 @@ requires:
 new Handle:timers;
 new Handle:players;
 new Handle:gameTimer;
+
 new gameDuration = 0;
 new gameEnd = 0;
 new timerInterval = 0.5;
@@ -82,10 +83,22 @@ public Event_pDisconnect(Handle:event, const String:namep[], bool:dontBroadcast)
 	 - structure data
 */
 public Event_rStart(Handle:event, const String:namep[], bool:dontBroadcast){
-	gameEnd = 0;
+	gameDuration, gameEnd = 0;
+	
+	//reset arrays
+	timers = CreateArray(1,0);
+	players = CreateArray(5,0); // 0 steamID, 1 kills, 2 red, 3 blue, 4 deaths
 
 	// start the timer for the game
 	gameTimer = CreateTimer(timerInterval, incrementGameTimer, _, TIMER_REPEAT);
+
+	//loop through all players that are alive
+	for(new i=1;i<= MaxClients;i++){
+		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){
+			
+		}
+	}
+
 }
 
 /*
