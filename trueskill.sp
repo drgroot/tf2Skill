@@ -17,6 +17,13 @@ requires:
 #include <sourcemod>
 #include <system2>
 
+new Handle:timers;
+new Handle:players;
+new Handle:gameTimer;
+new gameDuration = 0;
+new gameEnd = 0;
+new timerInterval = 0.5;
+
 /*
 delcare plublic variable information
 */
@@ -75,7 +82,10 @@ public Event_pDisconnect(Handle:event, const String:namep[], bool:dontBroadcast)
 	 - structure data
 */
 public Event_rStart(Handle:event, const String:namep[], bool:dontBroadcast){
-	
+	gameEnd = 0;
+
+	// start the timer for the game
+	gameTimer = CreateTimer(timerInterval, incrementGameTimer, _, TIMER_REPEAT);
 }
 
 /*
@@ -83,9 +93,23 @@ public Event_rStart(Handle:event, const String:namep[], bool:dontBroadcast){
 	 - post data to trueskill implementation
 */
 public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
-	
+	gameEnd = 1;
+
+	// close game timers
+	gameTimer = INVALID_HANDLE;	
 }
 
+
+
+/* TIMER METHODS */
+
+public Action:incrementGameTimer(Handle:timer){
+	if(gameEnd){
+		gameDuration = gameDuration + timerInterval;
+	}
+
+	return Plugin_Continue;
+}
 
 
 
