@@ -66,6 +66,10 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	new oTeam = GetEventInt(event,"oldteam");
 	new client = GetEventInt(event,"userid"); 
 	new steam = GetSteamAccountID(client,true);
+	
+	/* ensure its a legit client */
+	if(IsFakeClient(client))
+		return;
 
 	/* determine if player switched teams or joined */
 	if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
@@ -73,7 +77,17 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		/* if joined, determine if already rejoined */
 		for(new i=oFlow; i<= GetArraySize(players); i++){
 			/* if rejoined, apply swap */
-				
+			if (steam == GetArrayCell(players,i,0,false)){
+				SwapArrayItems(players, i, client);
+				SwapArrayItems(players_times, i, client);
+				SwapArrayItems(players_stats, i, client);
+
+				RemoveFromArray(players,i);
+				RemoveFromArray(players_stats,i);
+				RemoveFromArray(players_times,i);
+
+				return;
+			}
 		}
 		/* otherwise populate in array */
 		SetArrayArray(players, client, {0} );
