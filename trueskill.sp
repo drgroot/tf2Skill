@@ -19,7 +19,7 @@ requires:
 
 new Handle:players;
 
-new Float:gameDuration = 0;
+new Float:gameDuration = 0.0;
 new gameEnd = 0;
 new Float:timerInterval = 0.5;
 
