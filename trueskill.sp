@@ -56,7 +56,7 @@ public OnPluginStart(){
 	- keep tract of client playing time
 	- update client playing time
 */
-public Event_pTeam(Handle:event, const String:namep[], bool:dontBroadcast){
+public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	
 }
 
@@ -66,7 +66,7 @@ public Event_pTeam(Handle:event, const String:namep[], bool:dontBroadcast){
 	 - no affect on ranking,
 	   just to make everyone happy
 */
-public Event_pDeath(Handle:event, const String:namep[], bool:dontBroadcast){
+public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 		
 }
 
@@ -74,7 +74,7 @@ public Event_pDeath(Handle:event, const String:namep[], bool:dontBroadcast){
 	- keep track of clients disconnecting
 	- update client playing time
 */
-public Event_pDisconnect(Handle:event, const String:namep[], bool:dontBroadcast){
+public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 	
 }
 
@@ -82,7 +82,7 @@ public Event_pDisconnect(Handle:event, const String:namep[], bool:dontBroadcast)
 	- reset arrays, grab client information
 	 - structure data
 */
-public Event_rStart(Handle:event, const String:namep[], bool:dontBroadcast){
+public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	gameDuration=0.0; gameEnd = 0; ClearArray(players); 
 
 	// start the timer for the game
