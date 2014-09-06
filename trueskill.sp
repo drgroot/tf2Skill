@@ -62,6 +62,9 @@ public OnPluginStart(){
 	- update client playing time
 */
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
+	new oTeam = GetEventInt(event,"oldteam");
+
+
 	/* determine if player switched teams or joined */
 
 	/* if joined, determine if already rejoined */
@@ -95,7 +98,9 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 	 - structure data
 */
 public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
-	gameDuration=0.0; gameEnd = 0; ClearArray(players); 
+	gameDuration=0.0; gameEnd = 0; 
+	ClearArray(players); ClearArray(players_times); 
+	ClearArray(players_stats);
 
 	// start the timer for the game
 	CreateTimer(timerInterval, incrementGameTimer, _, TIMER_REPEAT);
