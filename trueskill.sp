@@ -102,6 +102,9 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 
 			SetArrayArray(players_stats,i,{0,0,1});
 			SetArrayArray(players_times,i,{0.0,0.0});
+
+			// create timer for player
+			CreateTimer(timerInterval,incrementPlayerTimer,i,TIMER_REPEAT);
 		}
 	}
 
@@ -128,6 +131,14 @@ public Action:incrementGameTimer(Handle:timer){
 	return Plugin_Continue;
 }
 
+public Action:incrementPlayerTimer(Handle:timer, any:client){
+	if(gameEnd)
+		return Plugin_Stop;
+
+
+
+	return Plugin_Continue;
+}
 
 
 
@@ -147,6 +158,5 @@ public Action:playRank(client, args){
 	database implementation from get request
 */
 public Action:topTen(client,args){
-	
 	return Plugin_Handled;
 }
