@@ -48,7 +48,7 @@ public OnPluginStart(){
 	HookEvent("teamplay_round_win",Event_rEnd);
 
 	players_times = CreateArray(2,0);
-	players_stats = CreateArray(3,0);
+	players_stats = CreateArray(2,0);
 	players = CreateArray(1,0);
 }
 
@@ -92,7 +92,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		/* otherwise populate in array */
 		SetArrayArray(players, client, {0} );
 		SetArrayCell(players, client, steam , 0, false);
-		SetArrayArray(players_stats, client, {0,0,1});
+		SetArrayArray(players_stats, client, {0,0});
 		SetArrayArray(players_times, client, {0.0,0.0});
 
 		/* create timer */
@@ -138,7 +138,7 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 			SetArrayArray(players,i, {0} );
 			SetArrayCell(players,i,GetSteamAccountID(i,true),0,false);
 
-			SetArrayArray(players_stats,i,{0,0,1});
+			SetArrayArray(players_stats,i,{0,0});
 			SetArrayArray(players_times,i,{0.0,0.0});
 
 			// create timer for player
