@@ -23,8 +23,9 @@ new Handle:players_stats;
 new Handle:players;
 
 new Float:gameDuration = 0.0;
-new gameEnd = 0;
 new Float:timerInterval = 0.5;
+new gameEnd = 0;
+new oFlow = 25;
 
 /*
 delcare plublic variable information
@@ -63,16 +64,16 @@ public OnPluginStart(){
 */
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	new oTeam = GetEventInt(event,"oldteam");
-
+	new client = GetEventInt(event,"userid"); 
 
 	/* determine if player switched teams or joined */
-
-	/* if joined, determine if already rejoined */
+	if(oTeam == TFTeam_Red || oTeam == TFTeam_Blue){
+		/* if joined, determine if already rejoined */
 		/* if rejoined, apply swap */
 		/* otherwise populate in array */
 
 		/* create timer */
-	/* else, do nothing */
+	}
 }
 
 /*
