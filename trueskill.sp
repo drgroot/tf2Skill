@@ -62,7 +62,14 @@ public OnPluginStart(){
 	- update client playing time
 */
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
-	
+	/* determine if player switched teams or joined */
+
+	/* if joined, determine if already rejoined */
+		/* if rejoined, apply swap */
+		/* otherwise populate in array */
+
+		/* create timer */
+	/* else, do nothing */
 }
 
 /*
