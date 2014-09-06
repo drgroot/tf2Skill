@@ -17,6 +17,8 @@ requires:
 #include <sourcemod>
 #include <system2>
 
+new Handle:players_times;
+new Handle:players_stats;
 new Handle:players;
 
 new Float:gameDuration = 0.0;
@@ -43,7 +45,9 @@ public OnPluginStart(){
 	HookEvent("teamplay_round_start", Event_rStart);
 	HookEvent("teamplay_round_win",Event_rEnd);
 
-	players = CreateArray(5,0);
+	players_times = CreateArray(2,0);
+	players_stats = CreateArray(3,0);
+	players = CreateArray(1,0);
 }
 
 
@@ -92,9 +96,12 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	for(new i=1;i<= MaxClients;i++){
 		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){	
 			
-			// populates array at index i, with client data 
-			SetArrayArray(players,i, {0, 0,0,0});
-			SetArrayCell(players,i, GetSteamAccountID(i,true) , 0, false);		
+			// populates player arrays
+			SetArrayArray(players,i, {0} );
+			SetArrayCell(players,i,GetSteamAccountID(i,true),0,false);
+
+			SetArrayArray(players_stats,i,{0,0,1});
+			SetArrayArray(players_times,i,{0.0,0.0});
 		}
 	}
 
