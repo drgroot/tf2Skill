@@ -15,6 +15,7 @@ requires:
 */
 
 #include <sourcemod>
+#include <tf2>
 #include <system2>
 
 new Handle:players_times;
@@ -124,7 +125,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 /* TIMER METHODS */
 
 public Action:incrementGameTimer(Handle:timer){
-	if(gameEnd)
+	if(gameEnd) 
 		return Plugin_Stop;
 	gameDuration = gameDuration + timerInterval;
 
@@ -132,10 +133,24 @@ public Action:incrementGameTimer(Handle:timer){
 }
 
 public Action:incrementPlayerTimer(Handle:timer, any:client){
-	if(gameEnd)
+	/* increments if player is connected and game is going */
+	if ( (gameEnd) || (! (IsClientInGame(client))  )  )
 		return Plugin_Stop;
+	
+	/* determine which team counter to increment */
+	switch (GetClientTeam(client)){
+		case TFTeam_Red: {
+			SetArrayCell(players_times,client,
+				GetArrayCell(players_times,client,0,false) + timerInterval, 
+				0,false);
+		}
 
-
+		case TFTeam_Blue: {
+			SetArrayCell(players_times,client,
+				GetArrayCell(players_times,client,1,false) + timerInterval, 
+				1,false);
+		}
+	}
 
 	return Plugin_Continue;
 }
