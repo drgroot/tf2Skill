@@ -65,14 +65,24 @@ public OnPluginStart(){
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	new oTeam = GetEventInt(event,"oldteam");
 	new client = GetEventInt(event,"userid"); 
+	new steam = GetSteamAccountID(client,true);
 
 	/* determine if player switched teams or joined */
-	if(oTeam == TFTeam_Red || oTeam == TFTeam_Blue){
+	if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
+		
 		/* if joined, determine if already rejoined */
-		/* if rejoined, apply swap */
+		for(new i=oFlow; i<= GetArraySize(players); i++){
+			/* if rejoined, apply swap */
+				
+		}
 		/* otherwise populate in array */
+		SetArrayArray(players, client, {0} );
+		SetArrayCell(players, client, steam , 0, false);
+		SetArrayArray(players_stats, client, {0,0,1});
+		SetArrayArray(players_times, client, {0.0,0.0});
 
 		/* create timer */
+		CreateTimer(timerInterval,incrementPlayerTimer,client,TIMER_REPEAT);
 	}
 }
 
@@ -152,13 +162,13 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	
 	/* determine which team counter to increment */
 	switch (GetClientTeam(client)){
-		case TFTeam_Red: {
+		case (_:TFTeam_Red): {
 			SetArrayCell(players_times,client,
 				GetArrayCell(players_times,client,0,false) + timerInterval, 
 				0,false);
 		}
 
-		case TFTeam_Blue: {
+		case (_:TFTeam_Blue): {
 			SetArrayCell(players_times,client,
 				GetArrayCell(players_times,client,1,false) + timerInterval, 
 				1,false);
