@@ -51,6 +51,7 @@ public OnPluginStart(){
 	HookEvent("player_death", Event_pDeath);
 	HookEvent("teamplay_round_start", Event_rStart);
 	HookEvent("teamplay_round_win",Event_rEnd);
+	HookEvent("player_disconnect", Event_pDisconnect);
 
 	players_times = CreateArray(2,0);
 	players_stats = CreateArray(2,0);
@@ -62,6 +63,15 @@ public OnPluginStart(){
 
 
 /* METHODS FOR GAME EVENTS */
+
+
+/*
+	- keep track of clients disconnecting
+	- update client playing time
+*/
+public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
+	client_count--;	
+}
 
 /*
 	- keep tract of client playing time
