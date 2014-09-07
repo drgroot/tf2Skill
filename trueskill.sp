@@ -170,7 +170,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 public Action:incrementGameTimer(Handle:timer){
 	if(gameEnd) 
 		return Plugin_Stop;
-	if(GetConVarInt(sm_minClients) >= client_count)
+	if(GetConVarInt(sm_minClients) > client_count)
 		return Plugin_Continue;
 
 	gameDuration = gameDuration + GetConVarFloat(sm_skillInterval);
@@ -182,7 +182,7 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	/* increments if player is connected and game is going */
 	if ( (gameEnd) || (! (IsClientInGame(client))  )  )
 		return Plugin_Stop;
-	if(GetConVarInt(sm_minClients) >= client_count)
+	if(GetConVarInt(sm_minClients) > client_count)
 		return Plugin_Continue;
 	
 	/* determine corresponding playerID */
