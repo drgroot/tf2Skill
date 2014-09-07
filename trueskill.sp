@@ -252,12 +252,12 @@ getPlayerID(client){
 createDB_tables(){
 	new String:error[255];
 
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(1,5) NOT NULL,`time_red` DECIMAL(1,5) NOT NULL,`result` INTEGER(1) NOT NULL);")){
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(6,5) NOT NULL,`time_red` DECIMAL(6,5) NOT NULL,`result` INTEGER(1) NOT NULL);")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
 
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT DEFAULT NULL, `steamID` MEDIUMTEXT(11) NOT NULL DEFAULT 'NULL',`lastConnect ` TIMESTAMP NOT NULL DEFAULT 'NULL',`mew` DECIMAL(11,5) NOT NULL DEFAULT 0.0,`sigma` DECIMAL(11,5) NOT NULL DEFAULT 0.0,`skill` DECIMAL(11,5) NOT NULL DEFAULT 0.0,PRIMARY KEY (`player_id`));")){
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT, `steamID` TEXT NOT NULL,`lastConnect` TIMESTAMP,`mew` DECIMAL(11,5) NOT NULL DEFAULT 0.0,`sigma` DECIMAL(11,5) NOT NULL DEFAULT 0.0,`skill` DECIMAL(11,5) NOT NULL DEFAULT 0.0,PRIMARY KEY (`player_id`));")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
