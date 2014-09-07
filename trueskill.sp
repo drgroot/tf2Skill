@@ -42,7 +42,6 @@ public OnPluginStart(){
 	/* bind methods to game events */
 	HookEvent("player_team",Event_pTeam);
 	HookEvent("player_death", Event_pDeath);
-	HookEvent("player_disconnect", Event_pDisconnect);
 	HookEvent("teamplay_round_start", Event_rStart);
 	HookEvent("teamplay_round_win",Event_rEnd);
 
@@ -101,14 +100,6 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 */
 public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 		
-}
-
-/*
-	- keep track of clients disconnecting
-	- update client playing time
-*/
-public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
-	
 }
 
 /*
