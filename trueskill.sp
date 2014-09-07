@@ -25,7 +25,6 @@ new Handle:players;
 new Float:gameDuration = 0.0;
 new Float:timerInterval = 0.5;
 new gameEnd = 0;
-new oFlow = 25;
 
 /*
 delcare plublic variable information
@@ -65,7 +64,6 @@ public OnPluginStart(){
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	new oTeam = GetEventInt(event,"oldteam");
 	new client = GetEventInt(event,"userid"); 
-	new steam = GetSteamAccountID(client,true);
 	
 	/* ensure its a legit client */
 	if(IsFakeClient(client))
@@ -75,26 +73,21 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
 		
 		/* if joined, determine if already rejoined */
-		for(new i=oFlow; i<= GetArraySize(players); i++){
-			/* if rejoined, apply swap */
-			if (steam == GetArrayCell(players,i,0,false)){
-				SwapArrayItems(players, i, client);
-				SwapArrayItems(players_times, i, client);
-				SwapArrayItems(players_stats, i, client);
+		new player = getPlayerID(client);
 
-				RemoveFromArray(players,i);
-				RemoveFromArray(players_stats,i);
-				RemoveFromArray(players_times,i);
+		/* otherwise populate the arrays */
+		if(player == -1){
+			decl String:steam_id[512];
+			GetClientAuthString(client,steam_id,sizeof(steam_id),true);
 
-				return;
-			}
+			// populate player arrays
+			PushArrayString(players,steam_id);
+			player = FindStringInArray(players,steam_id);
+			
+			SetArrayArray(players_stats,player,{0,0});
+			SetArrayArray(players_times,player,{0.0,0.0});
 		}
-		/* otherwise populate in array */
-		SetArrayArray(players, client, {0} );
-		SetArrayCell(players, client, steam , 0, false);
-		SetArrayArray(players_stats, client, {0,0});
-		SetArrayArray(players_times, client, {0.0,0.0});
-
+		
 		/* create timer */
 		CreateTimer(timerInterval,incrementPlayerTimer,client,TIMER_REPEAT);
 	}
@@ -124,22 +117,25 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 */
 public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	gameDuration=0.0; gameEnd = 0; 
-	ClearArray(players); ClearArray(players_times); 
-	ClearArray(players_stats);
+	ClearArray(players); 
+	ClearArray(players_stats); ClearArray(players_times); 
 
 	// start the timer for the game
 	CreateTimer(timerInterval, incrementGameTimer, _, TIMER_REPEAT);
 
 	//loop through all players that are alive
 	for(new i=1;i<= MaxClients;i++){
-		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){	
-			
-			// populates player arrays
-			SetArrayArray(players,i, {0} );
-			SetArrayCell(players,i,GetSteamAccountID(i,true),0,false);
+		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){
 
-			SetArrayArray(players_stats,i,{0,0});
-			SetArrayArray(players_times,i,{0.0,0.0});
+			decl String:steam_id[512];
+			GetClientAuthString(i,steam_id,sizeof(steam_id),true);
+
+			// populate player arrays
+			PushArrayString(players,steam_id);
+			new player = FindStringInArray(players,steam_id);
+
+			SetArrayArray(players_stats,player,{0,0});
+			SetArrayArray(players_times,player,{0.0,0.0});
 
 			// create timer for player
 			CreateTimer(timerInterval,incrementPlayerTimer,i,TIMER_REPEAT);
@@ -174,17 +170,20 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	if ( (gameEnd) || (! (IsClientInGame(client))  )  )
 		return Plugin_Stop;
 	
+	/* determine corresponding playerID */
+	new player = getPlayerID(client);
+
 	/* determine which team counter to increment */
 	switch (GetClientTeam(client)){
 		case (_:TFTeam_Red): {
-			SetArrayCell(players_times,client,
-				GetArrayCell(players_times,client,0,false) + timerInterval, 
+			SetArrayCell(players_times,player,
+				GetArrayCell(players_times,player,0,false) + timerInterval, 
 				0,false);
 		}
 
 		case (_:TFTeam_Blue): {
-			SetArrayCell(players_times,client,
-				GetArrayCell(players_times,client,1,false) + timerInterval, 
+			SetArrayCell(players_times,player,
+				GetArrayCell(players_times,player,1,false) + timerInterval, 
 				1,false);
 		}
 	}
@@ -212,3 +211,13 @@ public Action:playRank(client, args){
 public Action:topTen(client,args){
 	return Plugin_Handled;
 }
+
+/* Return playerID given client index */
+getPlayerID(client){
+	decl String:steam_id[512];
+	GetClientAuthString(client,steam_id,sizeof(steam_id),true);
+	return FindStringInArray(players,steam_id);
+}
+
+
+
