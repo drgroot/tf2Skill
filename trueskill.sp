@@ -17,10 +17,12 @@ requires:
 #include <sourcemod>
 #include <tf2>
 #include <system2>
+#include <dbi>
 
 new Handle:players_times;
 new Handle:players_stats;
 new Handle:players;
+new Handle:db;
 
 new Float:gameDuration = 0.0;
 new gameEnd = 0;
@@ -42,6 +44,12 @@ public Plugin:trueskill =
 	url = "http://yusufali.ca/repos/tf2Skill.git/"
 };
 public OnPluginStart(){
+	/* connect to database */
+	new String:error[255]
+	db = SQL_Connect("trueskill", true, error, sizeof(error));
+	if( db == INVALID_HANDLE)
+		PrintToServer("Could not connect: %s", error);
+
 	/* define convars */
 	sm_minClients = CreateConVar("sm_minClients","3","Minimum clients for ranking");
 	sm_skillInterval = CreateConVar("sm_skillInterval","0.5","TrueSkill interval");
