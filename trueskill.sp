@@ -50,6 +50,9 @@ public OnPluginStart(){
 	if( db == INVALID_HANDLE)
 		PrintToServer("Could not connect: %s", error);
 
+	/* create database tables */
+	createDB_tables();
+
 	/* define convars */
 	sm_minClients = CreateConVar("sm_minClients","3","Minimum clients for ranking");
 	sm_skillInterval = CreateConVar("sm_skillInterval","0.5","TrueSkill interval");
@@ -235,6 +238,10 @@ public Action:topTen(client,args){
 	return Plugin_Handled;
 }
 
+
+
+/* UTILITY COMMANDS */
+
 /* Return playerID given client index */
 getPlayerID(client){
 	decl String:steam_id[512];
@@ -242,5 +249,16 @@ getPlayerID(client){
 	return FindStringInArray(players,steam_id);
 }
 
+createDB_tables(){
+	new String:error[255];
 
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(1,5) NOT NULL,`time_red` DECIMAL(1,5) NOT NULL,`result` INTEGER(1) NOT NULL);")){
+		SQL_GetError(db, error, sizeof(error));
+		PrintToServer("Failed to query (error: %s)", error);
+	}
 
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT DEFAULT NULL, `steamID` MEDIUMTEXT(11) NOT NULL DEFAULT 'NULL',`lastConnect ` TIMESTAMP NOT NULL DEFAULT 'NULL',`mew` DECIMAL(11,5) NOT NULL DEFAULT 0.0,`sigma` DECIMAL(11,5) NOT NULL DEFAULT 0.0,`skill` DECIMAL(11,5) NOT NULL DEFAULT 0.0,PRIMARY KEY (`player_id`));")){
+		SQL_GetError(db, error, sizeof(error));
+		PrintToServer("Failed to query (error: %s)", error);
+	}
+}
