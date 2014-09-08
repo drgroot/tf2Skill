@@ -173,7 +173,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 
 	for(new i=0;i<GetArraySize(players);i++){
 		new float:red_time = GetArrayCell(players_times,i,0,false);
-		new float:blu_time = GetArrayCell(players_times,i,0,false); 
+		new float:blu_time = GetArrayCell(players_times,i,1,false); 
 		
 		decl String:steam_id[20];
 		GetArrayString(players,i,steam_id,sizeof(steam_id));
