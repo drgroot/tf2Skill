@@ -52,7 +52,7 @@ public OnPluginStart(){
 	discon_database();
 
 	/* define convars */
-	sm_minClients = CreateConVar("sm_minClients","3","Minimum clients for ranking");
+	sm_minClients = CreateConVar("sm_minClients","0","Minimum clients for ranking");
 	sm_skillInterval = CreateConVar("sm_skillInterval","0.5","TrueSkill interval");
 
 	/* bind methods to game events */
