@@ -45,13 +45,11 @@ public Plugin:trueskill =
 };
 public OnPluginStart(){
 	/* connect to database */
-	new String:error[255]
-	db = SQL_Connect("trueskill", true, error, sizeof(error));
-	if( db == INVALID_HANDLE)
-		PrintToServer("Could not connect: %s", error);
+	connect_database();
 
 	/* create database tables */
 	createDB_tables();
+	discon_database();
 
 	/* define convars */
 	sm_minClients = CreateConVar("sm_minClients","3","Minimum clients for ranking");
@@ -136,6 +134,9 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 	 - structure data
 */
 public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
+	/* connect to database */
+	connect_database();
+
 	gameDuration=0.0; gameEnd = 0; 
 	ClearArray(players); 
 	ClearArray(players_stats); ClearArray(players_times); 
@@ -162,7 +163,6 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 			CreateTimer(GetConVarFloat(sm_skillInterval),incrementPlayerTimer,i,TIMER_REPEAT);
 		}
 	}
-
 }
 
 /*
@@ -171,7 +171,17 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 */
 public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	gameEnd = 1;
+	new result = GetEventInt(event,"winner");
 
+	for(new i=0;i<GetArraySize(players);i++){
+		new float:red_time = GetArrayCell(players_times,i,0,false);
+		new float:blu_time = GetArrayCell(players_times,i,0,false); 
+		
+		decl String:steam_id[512];
+		GetArrayString(players,i,steam_id,sizeof(steam_id));
+	}
+
+	discon_database();
 }
 
 
@@ -249,6 +259,7 @@ getPlayerID(client){
 	return FindStringInArray(players,steam_id);
 }
 
+/* creates the mysql tables if they are not created */
 createDB_tables(){
 	new String:error[255];
 
@@ -261,4 +272,17 @@ createDB_tables(){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
+}
+
+/* connects to database */
+connect_database(){
+	new String:error[255]
+	db = SQL_Connect("trueskill", true, error, sizeof(error));
+	if( db == INVALID_HANDLE)
+		PrintToServer("Could not connect: %s", error);
+}
+
+/* close database connection */
+discon_database(){
+	CloseHandle(db);
 }
