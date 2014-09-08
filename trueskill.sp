@@ -62,8 +62,8 @@ public OnPluginStart(){
 	HookEvent("teamplay_round_win",Event_rEnd);
 	HookEvent("player_disconnect", Event_pDisconnect);
 
-	players_times = CreateArray(2,0);
-	players_stats = CreateArray(2,0);
+	players_times = CreateArray(1,0);
+	players_stats = CreateArray(1,0);
 	players = CreateArray(20,0);
 }
 
@@ -219,18 +219,22 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	
 	/* determine corresponding playerID */
 	new player = getPlayerID(client);
+	
+	/* get the required data array information */
+	decl Float:player_time[2];
+	GetArrayArray(players_times,player,player_time,sizeof(player_time)); 
 
 	/* determine which team counter to increment */
 	switch (GetClientTeam(client)){
 		case (_:TFTeam_Red): {
 			SetArrayCell(players_times,player,
-				GetArrayCell(players_times,player,0,false) + GetConVarFloat(sm_skillInterval), 
+				player_time[0] + GetConVarFloat(sm_skillInterval), 
 				0,false);
 		}
 
 		case (_:TFTeam_Blue): {
 			SetArrayCell(players_times,player,
-				GetArrayCell(players_times,player,1,false) + GetConVarFloat(sm_skillInterval), 
+				player_time[1] + GetConVarFloat(sm_skillInterval), 
 				1,false);
 		}
 	}
