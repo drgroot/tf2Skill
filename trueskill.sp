@@ -62,8 +62,8 @@ public OnPluginStart(){
 	HookEvent("teamplay_round_win",Event_rEnd);
 	HookEvent("player_disconnect", Event_pDisconnect);
 
-	players_times = CreateArray(1,0);
-	players_stats = CreateArray(1,0);
+	players_times = CreateArray(3,0);
+	players_stats = CreateArray(3,0);
 	players = CreateArray(20,0);
 }
 
@@ -169,11 +169,11 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 */
 public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	gameEnd = 1;
-	new result = GetEventInt(event,"winner");
+	new result = GetEventInt(event,"team");
 
 	for(new i=0;i<GetArraySize(players);i++){
-		new float:red_time = GetArrayCell(players_times,i,0,false);
-		new float:blu_time = GetArrayCell(players_times,i,1,false); 
+		decl Float:player_time[2];
+		GetArrayArray(players_times,i,player_time,sizeof(player_time));
 		
 		decl String:steam_id[20];
 		GetArrayString(players,i,steam_id,sizeof(steam_id));
@@ -186,7 +186,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		SQL_EscapeString(db,steam_id,new_name,buffer_len);
 		Format(query,sizeof(query), 
 			"INSERT INTO `temp` VALUES('%s',%f,%f,%d);",
-			new_name,red_time,blu_time,result);
+			new_name,player_time[1]/gameDuration,player_time[0]/gameDuration,result);
 
 		new Handle:hQuery = SQL_Query(db,query);
 		CloseHandle(hQuery);
@@ -227,17 +227,18 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	/* determine which team counter to increment */
 	switch (GetClientTeam(client)){
 		case (_:TFTeam_Red): {
-			player_time[0] += GetConVarFloat(sm_skillInterval);
+
+			player_time[0] = player_time[0] + GetConVarFloat(sm_skillInterval);
 		}
 
 		case (_:TFTeam_Blue): {
-			player_time[1] += GetConVarFloat(sm_skillInterval);
+			player_time[1] = player_time[1] + GetConVarFloat(sm_skillInterval);
 		}
 	}
-
+	
 	/* store array back into adt */
 	SetArrayArray(players_times,player,player_time,sizeof(player_time));
-
+	
 	return Plugin_Continue;
 }
 
