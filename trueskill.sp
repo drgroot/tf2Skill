@@ -227,17 +227,16 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	/* determine which team counter to increment */
 	switch (GetClientTeam(client)){
 		case (_:TFTeam_Red): {
-			SetArrayCell(players_times,player,
-				player_time[0] + GetConVarFloat(sm_skillInterval), 
-				0,false);
+			player_time[0] += GetConVarFloat(sm_skillInterval);
 		}
 
 		case (_:TFTeam_Blue): {
-			SetArrayCell(players_times,player,
-				player_time[1] + GetConVarFloat(sm_skillInterval), 
-				1,false);
+			player_time[1] += GetConVarFloat(sm_skillInterval);
 		}
 	}
+
+	/* store array back into adt */
+	SetArrayArray(players_times,player,player_time,sizeof(player_time));
 
 	return Plugin_Continue;
 }
