@@ -154,8 +154,6 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 
 			// populate player arrays
 			PushArrayString(players,steam_id);
-			new player = FindStringInArray(players,steam_id);
-
 			PushArrayArray(players_stats,{0,0});
 			PushArrayArray(players_times,{0.0,0.0});
 
