@@ -64,7 +64,7 @@ public OnPluginStart(){
 
 	players_times = CreateArray(2,0);
 	players_stats = CreateArray(2,0);
-	players = CreateArray(1,0);
+	players = CreateArray(20,0);
 }
 
 
@@ -110,8 +110,8 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 			PushArrayString(players,steam_id);
 			player = FindStringInArray(players,steam_id);
 			
-			SetArrayArray(players_stats,player,{0,0});
-			SetArrayArray(players_times,player,{0.0,0.0});
+			PushArrayArray(players_stats,{0,0});
+			PushArrayArray(players_times,{0.0,0.0});
 		}
 		
 		/* create timer */
@@ -156,8 +156,8 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 			PushArrayString(players,steam_id);
 			new player = FindStringInArray(players,steam_id);
 
-			SetArrayArray(players_stats,player,{0,0});
-			SetArrayArray(players_times,player,{0.0,0.0});
+			PushArrayArray(players_stats,{0,0});
+			PushArrayArray(players_times,{0.0,0.0});
 
 			// create timer for player
 			CreateTimer(GetConVarFloat(sm_skillInterval),incrementPlayerTimer,i,TIMER_REPEAT);
