@@ -103,7 +103,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		/* otherwise populate the arrays */
 		if(player == -1){
 			client_count++;
-			decl String:steam_id[512];
+			decl String:steam_id[20];
 			GetClientAuthString(client,steam_id,sizeof(steam_id),true);
 
 			// populate player arrays
@@ -149,7 +149,7 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){
 
 			client_count++;
-			decl String:steam_id[512];
+			decl String:steam_id[20];
 			GetClientAuthString(i,steam_id,sizeof(steam_id),true);
 
 			// populate player arrays
@@ -177,8 +177,21 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		new float:red_time = GetArrayCell(players_times,i,0,false);
 		new float:blu_time = GetArrayCell(players_times,i,0,false); 
 		
-		decl String:steam_id[512];
+		decl String:steam_id[20];
 		GetArrayString(players,i,steam_id,sizeof(steam_id));
+
+		/* insert data into database */
+		new String:query[512]; new buffer_len = strlen(steam_id)*2 +1;
+		new String:new_name[buffer_len];
+
+		/* build insert query */
+		SQL_EscapeString(db,steam_id,new_name,buffer_len);
+		Format(query,sizeof(query), 
+			"INSERT INTO `temp` VALUES('%s',%f,%f,%d);",
+			new_name,red_time,blu_time,result);
+
+		new Handle:hQuery = SQL_Query(db,query);
+		CloseHandle(hQuery);
 	}
 
 	discon_database();
@@ -254,7 +267,7 @@ public Action:topTen(client,args){
 
 /* Return playerID given client index */
 getPlayerID(client){
-	decl String:steam_id[512];
+	decl String:steam_id[20];
 	GetClientAuthString(client,steam_id,sizeof(steam_id),true);
 	return FindStringInArray(players,steam_id);
 }
