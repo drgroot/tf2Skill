@@ -16,7 +16,6 @@ requires:
 
 #include <sourcemod>
 #include <tf2>
-#include <system2>
 #include <dbi>
 
 new Handle:players_times;
