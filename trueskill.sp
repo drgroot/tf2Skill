@@ -17,6 +17,19 @@ requires:
 #include <sourcemod>
 #include <tf2>
 #include <dbi>
+#include <cURL>
+
+#define USE_THREAD				1
+new CURL_Default_opt[][2] = {
+#if USE_THREAD
+	{_:CURLOPT_NOSIGNAL,1},
+#endif
+	{_:CURLOPT_NOPROGRESS,1},
+	{_:CURLOPT_TIMEOUT,30},
+	{_:CURLOPT_CONNECTTIMEOUT,60},
+	{_:CURLOPT_VERBOSE,0}
+};
+#define CURL_DEFAULT_OPT(%1) curl_easy_setopt_int_array(%1, CURL_Default_opt, sizeof(CURL_Default_opt))
 
 new Handle:players_times;
 new Handle:players_stats;
@@ -192,6 +205,12 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	}
 
 	discon_database();
+
+	/* post to remote website to initiate calculations */
+	new Handle:curl = curl_easy_init();
+	CURL_DEFAULT_OPT(curl);
+	curl_easy_setopt_string(curl, CURLOPT_URL, "http://www.google.com");
+	ExecCURL(curl,2);
 }
 
 
@@ -299,4 +318,29 @@ connect_database(){
 /* close database connection */
 discon_database(){
 	CloseHandle(db);
+}
+
+stock ExecCURL(Handle:curl, current_test)
+{
+#if USE_THREAD
+	curl_easy_perform_thread(curl, onComplete, current_test);
+#else
+	new CURLcode:code = curl_load_opt(curl);
+	if(code != CURLE_OK) {
+		PrintTestCaseDebug(current_test, "curl_load_opt Error");
+		PrintcUrlError(code);
+		CloseHandle(curl);
+		return;
+	}
+	
+	code = curl_easy_perform(curl);
+	
+	onComplete(curl, code, current_test);
+
+#endif
+}
+
+public onComplete(Handle:hndl, CURLcode: code, any:data)
+{
+	CloseHandle(hndl);
 }
