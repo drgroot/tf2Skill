@@ -64,7 +64,7 @@ public OnPluginStart(){
 	discon_database();
 
 	/* define convars */
-	sm_minClients = CreateConVar("sm_minClients","0","Minimum clients for ranking");
+	sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
 	sm_skillInterval = CreateConVar("sm_skillInterval","0.5","TrueSkill interval");
 
 	/* bind methods to game events */
@@ -108,13 +108,13 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 
 	/* determine if player switched teams or joined */
 	if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
-		
+		client_count++;
+
 		/* if joined, determine if already rejoined */
 		new player = getPlayerID(client);
 
 		/* otherwise populate the arrays */
 		if(player == -1){
-			client_count++;
 			decl String:steam_id[20];
 			GetClientAuthString(client,steam_id,sizeof(steam_id),true);
 
