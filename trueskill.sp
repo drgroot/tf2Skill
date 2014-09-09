@@ -209,7 +209,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	/* post to remote website to initiate calculations */
 	new Handle:curl = curl_easy_init();
 	CURL_DEFAULT_OPT(curl);
-	curl_easy_setopt_string(curl, CURLOPT_URL, "http://www.google.com");
+	curl_easy_setopt_string(curl, CURLOPT_URL, "http://playtf2.com/test.php");
 	ExecCURL(curl,2);
 }
 
