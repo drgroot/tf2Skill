@@ -182,6 +182,7 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	gameEnd = 1;
 	new result = GetEventInt(event,"team");
+	new random = GetRandomInt(0,400);
 
 	for(new i=0;i<GetArraySize(players);i++){
 		decl Float:player_time[2];
@@ -197,8 +198,8 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		/* build insert query */
 		SQL_EscapeString(db,steam_id,new_name,buffer_len);
 		Format(query,sizeof(query), 
-			"INSERT INTO `temp` VALUES('%s',%f,%f,%d);",
-			new_name,player_time[1]/gameDuration,player_time[0]/gameDuration,result);
+			"INSERT INTO `temp` VALUES('%s',%f,%f,%d,%d);",
+			new_name,player_time[1]/gameDuration,player_time[0]/gameDuration,result,random);
 
 		new Handle:hQuery = SQL_Query(db,query);
 		CloseHandle(hQuery);
@@ -296,7 +297,7 @@ getPlayerID(client){
 createDB_tables(){
 	new String:error[255];
 
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(6,5) NOT NULL,`time_red` DECIMAL(6,5) NOT NULL,`result` INTEGER(1) NOT NULL);")){
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(6,5) NOT NULL,`time_red` DECIMAL(6,5) NOT NULL,`result` INTEGER(1) NOT NULL,`random` INTEGER(6) NOT NULL);")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
