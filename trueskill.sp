@@ -37,12 +37,14 @@ new Handle:players;
 new Handle:db;
 
 new Float:gameDuration = 0.0;
+new Float:gameDelayed = 0.0;
 new gameEnd = 0;
 new client_count = 0;
 
 /* define convars */
 new Handle:sm_minClients = INVALID_HANDLE;
 new Handle:sm_skillInterval = INVALID_HANDLE;
+new Handle:sm_maxDelayTime = INVALID_HANDLE;
 
 /*
 delcare plublic variable information
@@ -66,6 +68,7 @@ public OnPluginStart(){
 	/* define convars */
 	sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
 	sm_skillInterval = CreateConVar("sm_skillInterval","0.5","TrueSkill interval");
+	sm_maxDelayTime = CreateConVar("sm_maxDelayTime","60","Maximum time under 16 clients for rank");
 
 	/* bind methods to game events */
 	HookEvent("player_team",Event_pTeam);
@@ -184,6 +187,11 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	new result = GetEventInt(event,"team");
 	new random = GetRandomInt(0,400);
 
+	/* ensure that the game was not a farm fest */
+	if (gameDelayed > GetConVarFloat(sm_maxDelayTime)){
+		return;
+	}	
+
 	for(new i=0;i<GetArraySize(players);i++){
 		decl Float:player_time[2];
 		GetArrayArray(players_times,i,player_time,sizeof(player_time));
@@ -221,9 +229,16 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 public Action:incrementGameTimer(Handle:timer){
 	if(gameEnd) 
 		return Plugin_Stop;
-	if(GetConVarInt(sm_minClients) > client_count)
+	if(GetConVarInt(sm_minClients) > client_count && gameDuration == 0.0){
 		return Plugin_Continue;
-
+	}
+	if(GetConVarInt(sm_minClients) > client_count){
+		gameDelayed = gameDelayed + GetConVarFloat(sm_skillInterval);
+	}
+	else{
+		gameDelayed = 0.0;
+	} 
+	
 	gameDuration = gameDuration + GetConVarFloat(sm_skillInterval);
 
 	return Plugin_Continue;
@@ -233,7 +248,7 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	/* increments if player is connected and game is going */
 	if ( (gameEnd) || (! (IsClientInGame(client))  )  )
 		return Plugin_Stop;
-	if(GetConVarInt(sm_minClients) > client_count)
+	if(GetConVarInt(sm_minClients) > client_count && gameDuration == 0.0 )
 		return Plugin_Continue;
 	
 	/* determine corresponding playerID */
@@ -297,12 +312,12 @@ getPlayerID(client){
 createDB_tables(){
 	new String:error[255];
 
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(6,5) NOT NULL,`time_red` DECIMAL(6,5) NOT NULL,`result` INTEGER(1) NOT NULL,`random` INTEGER(6) NOT NULL);")){
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(11,10) NOT NULL,`time_red` DECIMAL(11,10) NOT NULL,`result` INTEGER(1) NOT NULL,`random` INTEGER(6) NOT NULL);")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
 
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT, `steamID` TEXT NOT NULL,`lastConnect` TIMESTAMP,`mew` DECIMAL(11,5) NOT NULL DEFAULT 25.0,`sigma` DECIMAL(11,5) NOT NULL DEFAULT 8.3333,`rank` DECIMAL(11,5) NOT NULL DEFAULT 0.0 ,PRIMARY KEY (`player_id`));")){
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT, `steamID` TEXT NOT NULL,`lastConnect` TIMESTAMP,`mew` DECIMAL(20,17) NOT NULL DEFAULT 25.0,`sigma` DECIMAL(20,17) NOT NULL DEFAULT 8.3333,`rank` DECIMAL(20,17) NOT NULL DEFAULT 0.0 ,PRIMARY KEY (`player_id`));")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
