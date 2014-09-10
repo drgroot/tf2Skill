@@ -60,11 +60,11 @@ for randoms in cur:
 		if ( int(player_red*100) == 0 and int(player_blue*100)==0 ):
 			continue
 		elif ( player_red < player_blue ):
-			team_blu.append(env.Rating(mu=mew,sigma=sigma))
+			team_blu.append(env.create_rating(mu=mew,sigma=sigma))
 			time_blu.append(player_blue)
 			steam_blu.append(steamID)
 		elif ( player_red > player_blue ):
-			team_red.append(env.Rating(mu=mew,sigma=sigma))
+			team_red.append(env.create_rating(mu=mew,sigma=sigma))
 			time_red.append(player_red)
 			steam_red.append(steamID)
 	
