@@ -28,10 +28,14 @@ def getPlayerSkill(steamID):
 cur = conn.cursor(); cur2 = conn.cursor();
 cur.execute("SELECT DISTINCT(random) FROM temp");
 
+ 
+
 for randoms in cur:
-	random = randoms[0]; 
+	random = 374;#randoms[0]; 
 	team_blu = []; team_red = [];
 	time_blu = []; time_red = [];
+	players_rating = [];
+	players_steamd = [];
 	
 	cur2.execute("SELECT * FROM temp WHERE random = %d" % random);
 	
@@ -42,28 +46,25 @@ for randoms in cur:
 		
 		# load old player information
 		mew, sigma = getPlayerSkill(steamID);
-		
+		players_rating.append(skill.Rating(mu=mew,sigma=sigma)); 
+		players_steamd.append(steamID)
 		
 		break
-
 	break
 
 #cur2.close();
 
-
+print players_rating
+print players_steamd
 	
 
 # Steps
 
-# 1. load temp table (by gameNumber) into variable
+# 1. load temp table (by gameNumber) into variable (done)
 	# delete from temp table
-
-# 2. load old player information, create if not existant
-
+# 2. load old player information, create if not existant (done)
 # 3. Formulate teams
-
 # 4. Apply TrueSkill calculation
-
 # 5. store data into database
 
 
