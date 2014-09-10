@@ -152,7 +152,7 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	/* connect to database */
 	connect_database();
 
-	gameDuration=0.0; gameEnd = 0; 
+	gameDuration=0.0; gameEnd = 0; gameDelayed = 0.0;
 	ClearArray(players); 
 	ClearArray(players_stats); ClearArray(players_times); 
 
