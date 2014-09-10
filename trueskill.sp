@@ -286,6 +286,12 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	database implementation
 */
 public Action:playRank(client, args){
+	/* steps */
+	 /* 1. get steamid from client */
+	 /* 2. query database and return player skill
+               and sigma, and rank (1- x etc)   */
+	 /* 3. display to user in chat box */
+
 	return Plugin_Handled;
 }
 
