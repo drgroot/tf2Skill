@@ -302,7 +302,7 @@ createDB_tables(){
 		PrintToServer("Failed to query (error: %s)", error);
 	}
 
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT, `steamID` TEXT NOT NULL,`lastConnect` TIMESTAMP,`mew` DECIMAL(11,5) NOT NULL DEFAULT 25.0,`sigma` DECIMAL(11,5) NOT NULL DEFAULT 8.3333,PRIMARY KEY (`player_id`));")){
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT, `steamID` TEXT NOT NULL,`lastConnect` TIMESTAMP,`mew` DECIMAL(11,5) NOT NULL DEFAULT 25.0,`sigma` DECIMAL(11,5) NOT NULL DEFAULT 8.3333,`rank` DECIMAL(11,5) NOT NULL DEFAULT 0.0 ,PRIMARY KEY (`player_id`));")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
