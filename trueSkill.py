@@ -21,6 +21,18 @@ def getPlayerSkill(steamID):
 	conn.commit();cur_gP.close()
 	return getPlayerSkill(steamID)
 
+def updatePlayerInfo(team_ls,steam_ls):
+	cur_uP = conn.cursor();
+
+	i = 0;
+	for mem in team_ls:
+		data = {"steam" : steam_ls[i], "mu" : mem.mu,
+				"sigma" : mem.sigma, "rank": env.expose(mem)};
+		cur_uP.execute("UPDATE players SET mew = %(mu)f, sigma=%(sigma)f, \
+rank=%(rank)f WHERE steamID='%(steam)s'" % data)
+		i = i+1
+	conn.commit()
+	cur_uP.close()
 
 
 #### MAIN ####
@@ -30,12 +42,12 @@ cur = conn.cursor(); cur2 = conn.cursor();
 cur.execute("SELECT DISTINCT(random) FROM temp");
 
 for randoms in cur:
-	random = 374;#randoms[0]; 
+	random = randoms[0]; 
 	team_blu = []; team_red = []; steam_blu = [];
 	time_blu = []; time_red = []; steam_red = [];
 	
 	cur2.execute("SELECT * FROM temp WHERE random = %d" % random);
-	j = 0;
+	
 	# load temp table
 	for player in cur2:
 		steamID = player[0]; player_blue = float(player[1]);
@@ -55,9 +67,11 @@ for randoms in cur:
 			team_red.append(env.Rating(mu=mew,sigma=sigma))
 			time_red.append(player_red)
 			steam_red.append(steamID)
-		j = j+1;
-		if j >= 3:
-			break
+	
+	# ensure people are playing
+	if (len(team_red) + len(team_blu)) < 16:
+		continue
+
 	# apply TrueSkill calculation
 	if result == 3:
 		[team_blu, team_red] = env.rate([tuple(team_blu), tuple(team_red)],
@@ -65,37 +79,16 @@ for randoms in cur:
 	else:
 		[team_red, team_blu] = env.rate([tuple(team_red), tuple(team_blu)],
 	 		weights=[tuple(time_red), tuple(time_blu)])
-	print team_red
-	print steam_red
 
 	# update information in the database
-	i = 0;
-	for mem in team_red:
-		steamID = steam_red[i]
-		skill = env.expose(mem)
+	updatePlayerInfo(team_red,steam_red)
+	updatePlayerInfo(team_blu,steam_blu)
 
-		
+	# drop data from temp table
+	cur_del = conn.cursor();
+	cur_del.execute("DELETE FROM temp WHERE random = %d" % random);
+	conn.commit(); cur_del.close();
 
-
-		i = i+1
-
-	break
-
-#print ""
-#print steam_blu
-#cur2.close();
-
-	
-
-# Steps
-
-# 1. load temp table (by gameNumber) into variable (done)
-	# delete from temp table
-# 2. load old player information, create if not existant (done)
-# 3. Formulate teams (done)
-# 4. Apply TrueSkill calculation (done)
-# 5. store data into database
-
-
+cur2.close();
 cur.close();
 conn.close();
