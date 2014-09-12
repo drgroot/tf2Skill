@@ -284,23 +284,25 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 */
 public Action:playRank(client, args){
 	connect_database();
-	new String:SteamID[] = "sads";
-	new rank = 0; new sigma = 100;
+	decl String:SteamID[20];
+	new rank = 0; new Float:sigma = 100.0;
 
 	/* steps */
 	 /* 1. get steamid from client */
+	GetClientAuthString(client,SteamID,sizeof(SteamID),true);
 
 	 /* 2. query database and return player skill
                and sigma, and rank (1- x etc)   */
 	new String:query[200];
 	Format(query,sizeof(query),"SET @row_number:=0;SELECT row_number,sigma FROM (SELECT @row_number:=@row_number+1 AS row_number,rank,steamID,sigma FROM players ORDER BY rank DESC) as t WHERE steamID='%s'",SteamID);
-	new Handle:hQuery == SQL_Query(db,query);
+	new Handle:hQuery = SQL_Query(db,query);
 
-	while(SQL_FetchRow(query)){
-
+	while(SQL_FetchRow(hQuery)){
+		rank = SQL_FetchInt(hQuery,0); sigma = SQL_FetchFloat(hQuery,1);
 	}
 
 	 /* 3. display to user in chat box */
+	PrintToChat(client,"Rank of \x08 %d \x01, with \x08 %.2f \x01 of uncertainty",rank,sigma);		
 
 	return Plugin_Handled;
 }
@@ -349,10 +351,11 @@ connect_database(){
 	}
 }
 
-/* close database connection */
+/* close database connection 
 discon_database(){
 	CloseHandle(db);
 }
+*/
 
 stock ExecCURL(Handle:curl, current_test)
 {
