@@ -331,15 +331,18 @@ createDB_tables(){
 
 /* connects to database */
 connect_database(){
-	new String:error[255]
-	db = SQL_Connect("trueskill", true, error, sizeof(error));
-	if( db == INVALID_HANDLE)
-		PrintToServer("Could not connect: %s", error);
+	if(db == INVALID_HANDLE){
+		new String:error[255]
+		db = SQL_Connect("trueskill", true, error, sizeof(error));
+		if( db == INVALID_HANDLE)
+			PrintToServer("Could not connect: %s", error);
+	}
 }
 
 /* close database connection */
 discon_database(){
 	CloseHandle(db);
+	db == INVALID_HANDLE;
 }
 
 stock ExecCURL(Handle:curl, current_test)
