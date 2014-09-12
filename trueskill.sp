@@ -285,6 +285,7 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 public Action:playRank(client, args){
 	connect_database();
 	new String:SteamID[] = "sads";
+	new rank = 0; new sigma = 100;
 
 	/* steps */
 	 /* 1. get steamid from client */
@@ -293,6 +294,11 @@ public Action:playRank(client, args){
                and sigma, and rank (1- x etc)   */
 	new String:query[200];
 	Format(query,sizeof(query),"SET @row_number:=0;SELECT row_number,sigma FROM (SELECT @row_number:=@row_number+1 AS row_number,rank,steamID,sigma FROM players ORDER BY rank DESC) as t WHERE steamID='%s'",SteamID);
+	new Handle:hQuery == SQL_Query(db,query);
+
+	while(SQL_FetchRow(query)){
+
+	}
 
 	 /* 3. display to user in chat box */
 
