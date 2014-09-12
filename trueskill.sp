@@ -8,9 +8,7 @@ trueskill ranking system.
 Author: Yusuf Ali
 
 requires:
- System2 for advanced shell commands
- https://forums.alliedmods.net/showthread.php?t=146019
-
+	curl - initiate trueskill calculations
 
 */
 
@@ -63,7 +61,6 @@ public OnPluginStart(){
 
 	/* create database tables */
 	createDB_tables();
-	discon_database();
 
 	/* define convars */
 	sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
@@ -187,6 +184,8 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	new result = GetEventInt(event,"team");
 	new random = GetRandomInt(0,400);
 
+	connect_database();
+
 	/* ensure that the game was not a farm fest */
 	if (gameDelayed > GetConVarFloat(sm_maxDelayTime)){
 		return;
@@ -212,8 +211,6 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		new Handle:hQuery = SQL_Query(db,query);
 		CloseHandle(hQuery);
 	}
-
-	discon_database();
 
 	/* post to remote website to initiate calculations */
 	new Handle:curl = curl_easy_init();
@@ -286,10 +283,17 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	database implementation
 */
 public Action:playRank(client, args){
+	connect_database();
+	new String:SteamID[] = "sads";
+
 	/* steps */
 	 /* 1. get steamid from client */
+
 	 /* 2. query database and return player skill
                and sigma, and rank (1- x etc)   */
+	new String:query[200];
+	Format(query,sizeof(query),"SET @row_number:=0;SELECT row_number,sigma FROM (SELECT @row_number:=@row_number+1 AS row_number,rank,steamID,sigma FROM players ORDER BY rank DESC) as t WHERE steamID='%s'",SteamID);
+
 	 /* 3. display to user in chat box */
 
 	return Plugin_Handled;
@@ -342,7 +346,6 @@ connect_database(){
 /* close database connection */
 discon_database(){
 	CloseHandle(db);
-	db == INVALID_HANDLE;
 }
 
 stock ExecCURL(Handle:curl, current_test)
