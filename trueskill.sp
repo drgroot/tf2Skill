@@ -102,13 +102,9 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	new oTeam = GetEventInt(event,"oldteam");
 	new client = GetEventInt(event,"userid"); 
-	
-	/* ensures client is connected */
-	if(!IsClientConnected(client))
-		return;
 
 	/* ensure its a legit client */
-	if(IsFakeClient(client))
+	if(IsFakeClient(GetClientOfUserId(client)))
 		return;
 
 	/* determine if player switched teams or joined */
@@ -177,7 +173,6 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	//loop through all players that are alive
 	for(new i=1;i<= MaxClients;i++){
 		/* ensures client is connected */
-		if(IsClientConnected(i))
 		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){
 
 			client_count++;
