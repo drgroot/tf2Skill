@@ -355,7 +355,7 @@ createDB_tables(){
 connect_database(){
 	if(db == INVALID_HANDLE){
 		new String:error[255]
-		db = SQL_Connect("trueskill", true, error, sizeof(error));
+		db = SQL_Connect("default", true, error, sizeof(error));
 		if( db == INVALID_HANDLE)
 			PrintToServer("Could not connect: %s", error);
 	}
