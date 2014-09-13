@@ -113,7 +113,20 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 
 	/* determine if player switched teams or joined */
 	if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
+		connect_database();
 		client_count++;
+
+		/* get SteamID */
+		decl String:SteamID[20];
+		GetClientAuthString(client,SteamID,sizeof(SteamID),true);
+
+		/* add to database, and update last connect */
+		new String:query[512];
+		Format(query,sizeof(query), 
+			"insert into players2 (steamID) values ('%s') on duplicate key update lastConnect = CURRENT_TIMESTAMP;",
+			SteamID);
+		new Handle:hQuery = SQL_Query(db,query);
+		CloseHandle(hQuery);
 
 		/* if joined, determine if already rejoined */
 		new player = getPlayerID(client);
@@ -332,7 +345,7 @@ createDB_tables(){
 		PrintToServer("Failed to query (error: %s)", error);
 	}
 
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT, `steamID` TEXT NOT NULL,`lastConnect` TIMESTAMP,`mew` DECIMAL(20,17) NOT NULL DEFAULT 25.0,`sigma` DECIMAL(20,17) NOT NULL DEFAULT 8.3333,`rank` DECIMAL(20,17) NOT NULL DEFAULT 0.0 ,PRIMARY KEY (`player_id`));")){
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT, `steamID` TEXT NOT NULL,`lastConnect` TIMESTAMP,`mew` DECIMAL(20,17) NOT NULL DEFAULT 25.0,`sigma` DECIMAL(20,17) NOT NULL DEFAULT 8.3333,`rank` DECIMAL(20,17) NOT NULL DEFAULT 0.0 ,PRIMARY KEY (`player_id`),UNIQUE(steamid(100)));")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
