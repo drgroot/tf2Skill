@@ -73,6 +73,7 @@ public OnPluginStart(){
 	HookEvent("teamplay_round_start", Event_rStart);
 	HookEvent("teamplay_round_win",Event_rEnd);
 	HookEvent("player_disconnect", Event_pDisconnect);
+	RegConsoleCmd("sm_rank",playRank);
 
 	players_times = CreateArray(3,0);
 	players_stats = CreateArray(3,0);
@@ -293,8 +294,8 @@ public Action:playRank(client, args){
 
 	 /* 2. query database and return player skill
                and sigma, and rank (1- x etc)   */
-	new String:query[200];
-	Format(query,sizeof(query),"SET @row_number:=0;SELECT row_number,sigma FROM (SELECT @row_number:=@row_number+1 AS row_number,rank,steamID,sigma FROM players ORDER BY rank DESC) as t WHERE steamID='%s'",SteamID);
+	decl String:query[250];
+	Format(query,sizeof(query)," select count(*)+1 rank,my.sigma from players my left join players others on others.rank > my.rank where my.SteamID = '%s';",SteamID);
 	new Handle:hQuery = SQL_Query(db,query);
 
 	while(SQL_FetchRow(hQuery)){
@@ -302,7 +303,7 @@ public Action:playRank(client, args){
 	}
 
 	 /* 3. display to user in chat box */
-	PrintToChat(client,"Rank of \x08 %d \x01, with \x08 %.2f \x01 of uncertainty",rank,sigma);		
+	PrintToChat(client,"Rank of %d, with %.2f units of uncertainty",rank,sigma);		
 
 	return Plugin_Handled;
 }
