@@ -101,10 +101,10 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 */
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	new oTeam = GetEventInt(event,"oldteam");
-	new client = GetEventInt(event,"userid"); 
+	new client = GetClientOfUserId(GetEventInt(event,"userid")); 
 
 	/* ensure its a legit client */
-	if(IsFakeClient(GetClientOfUserId(client)))
+	if(IsFakeClient(client))
 		return;
 
 	/* determine if player switched teams or joined */
@@ -114,12 +114,12 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 
 		/* get SteamID */
 		decl String:SteamID[20];
-		GetClientAuthString(GetClientOfUserId(client),SteamID,sizeof(SteamID),true);
+		GetClientAuthString(client,SteamID,sizeof(SteamID),true);
 
 		/* add to database, and update last connect */
 		new String:query[512];
 		Format(query,sizeof(query), 
-			"insert into players2 (steamID) values ('%s') on duplicate key update lastConnect = CURRENT_TIMESTAMP;",
+			"insert into players (steamID) values ('%s') on duplicate key update lastConnect = CURRENT_TIMESTAMP;",
 			SteamID);
 		new Handle:hQuery = SQL_Query(db,query);
 		CloseHandle(hQuery);
