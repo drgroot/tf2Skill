@@ -114,7 +114,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 
 		/* get SteamID */
 		decl String:SteamID[20];
-		GetClientAuthString(client,SteamID,sizeof(SteamID),true);
+		GetClientAuthString(GetClientOfUserId(client),SteamID,sizeof(SteamID),true);
 
 		/* add to database, and update last connect */
 		new String:query[512];
