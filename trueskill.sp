@@ -314,16 +314,6 @@ public Action:playRank(client, args){
 	return Plugin_Handled;
 }
 
-/*
-	shows top10 players from trueskill
-	database implementation from get request
-*/
-public Action:topTen(client,args){
-	return Plugin_Handled;
-}
-
-
-
 /* UTILITY COMMANDS */
 
 /* Return playerID given client index */
