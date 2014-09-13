@@ -3,8 +3,8 @@
 import trueskill as skill;
 import pymysql;
 
-conn = pymysql.connect(host='db4free.net',port=3306,
-	user='trueskill',passwd='something',db='trueskill');
+conn = pymysql.connect(host='127.0.0.1',port=3306,
+	user='playtf2',passwd='j506JyusufSSfMuu8e',db='playtf2');
 env = skill.TrueSkill();
 
 # loads old player information
