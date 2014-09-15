@@ -35,14 +35,12 @@ new Handle:players;
 new Handle:db;
 
 new Float:gameDuration = 0.0;
-new Float:gameDelayed = 0.0;
 new gameEnd = 0;
 new client_count = 0;
 
 /* define convars */
 new Handle:sm_minClients = INVALID_HANDLE;
 new Handle:sm_skillInterval = INVALID_HANDLE;
-new Handle:sm_maxDelayTime = INVALID_HANDLE;
 
 /*
 delcare plublic variable information
@@ -65,7 +63,6 @@ public OnPluginStart(){
 	/* define convars */
 	sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
 	sm_skillInterval = CreateConVar("sm_skillInterval","0.5","TrueSkill interval");
-	sm_maxDelayTime = CreateConVar("sm_maxDelayTime","60","Maximum time under 16 clients for rank");
 
 	/* bind methods to game events */
 	HookEvent("player_team",Event_pTeam);
@@ -163,7 +160,7 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	/* connect to database */
 	connect_database();
 
-	gameDuration=0.0; gameEnd = 0; gameDelayed = 0.0;
+	gameDuration=0.0; gameEnd = 0;
 	ClearArray(players); 
 	ClearArray(players_stats); ClearArray(players_times); 
 
@@ -202,7 +199,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	connect_database();
 
 	/* ensure that the game was not a farm fest */
-	if (gameDelayed > GetConVarFloat(sm_maxDelayTime)){
+	if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) {
 		return;
 	}	
 
@@ -241,15 +238,6 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 public Action:incrementGameTimer(Handle:timer){
 	if(gameEnd) 
 		return Plugin_Stop;
-	if(GetConVarInt(sm_minClients) > client_count && gameDuration == 0.0){
-		return Plugin_Continue;
-	}
-	if(GetConVarInt(sm_minClients) > client_count){
-		gameDelayed = gameDelayed + GetConVarFloat(sm_skillInterval);
-	}
-	else{
-		gameDelayed = 0.0;
-	} 
 	
 	gameDuration = gameDuration + GetConVarFloat(sm_skillInterval);
 
@@ -260,8 +248,6 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	/* increments if player is connected and game is going */
 	if ( (gameEnd) || (! (IsClientInGame(client))  )  )
 		return Plugin_Stop;
-	if(GetConVarInt(sm_minClients) > client_count && gameDuration == 0.0 )
-		return Plugin_Continue;
 	
 	/* determine corresponding playerID */
 	new player = getPlayerID(client);
@@ -273,7 +259,6 @@ public Action:incrementPlayerTimer(Handle:timer, any:client){
 	/* determine which team counter to increment */
 	switch (GetClientTeam(client)){
 		case (_:TFTeam_Red): {
-
 			player_time[0] = player_time[0] + GetConVarFloat(sm_skillInterval);
 		}
 
