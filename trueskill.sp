@@ -149,7 +149,11 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	   just to make everyone happy
 */
 public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
-		
+	/* get client index */
+	new killer = GetClientOfUserId(GetEventInt(event,"attacker"));
+	new victim = GetClientOfUserId(GetEventInt(event,"userid"));
+
+	/* get clients role */
 }
 
 /*
