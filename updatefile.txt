@@ -17,4 +17,5 @@
 		
 		"Source"	"Path_SM/scripting/trueskill.sp"
 	}
+}
 
