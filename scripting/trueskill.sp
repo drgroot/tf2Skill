@@ -16,6 +16,9 @@ requires:
 #include <dbi>
 #include <cURL>
 #include <tf2_stocks>
+#include <updater>
+
+#define UPDATE_URL "http://playtf2.com/tf2Skill/updatefile.txt"
 
 #define USE_THREAD				1
 new CURL_Default_opt[][2] = {
@@ -54,6 +57,8 @@ public Plugin:trueskill =
 	url = "http://yusufali.ca/repos/tf2Skill.git/"
 };
 public OnPluginStart(){
+	Updater_AddPlugin(UPDATE_URL);	
+
 	/* connect to database */
 	connect_database();
 
