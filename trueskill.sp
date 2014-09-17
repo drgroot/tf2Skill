@@ -13,9 +13,9 @@ requires:
 */
 
 #include <sourcemod>
-#include <tf2>
 #include <dbi>
 #include <cURL>
+#include <tf2_stocks>
 
 #define USE_THREAD				1
 new CURL_Default_opt[][2] = {
@@ -73,7 +73,7 @@ public OnPluginStart(){
 	RegConsoleCmd("sm_rank",playRank);
 
 	players_times = CreateArray(3,0);
-	players_stats = CreateArray(3,0);
+	players_stats = CreateArray(20,0);
 	players = CreateArray(20,0);
 }
 
@@ -149,11 +149,35 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	   just to make everyone happy
 */
 public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
+	/* ensure not a fake death */
+	if (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER) { 
+    	return;  
+	}
+
+	/* ensure killed by another player */
+	if(GetEventInt(event,"attacker") <= 0 || GetEventInt(event,"attacker") > MaxClients){
+		return;
+	}
+
 	/* get client index */
 	new killer = GetClientOfUserId(GetEventInt(event,"attacker"));
 	new victim = GetClientOfUserId(GetEventInt(event,"userid"));
 
 	/* get clients role */
+	new TFClassType:killer_role = TF2_GetPlayerClass(killer);
+	new TFClassType:victim_role = TF2_GetPlayerClass(victim);
+
+	/* get adt_array index */
+	killer = getPlayerID(killer); 
+	victim = getPlayerID(victim);
+
+	/* get old stats for increment purposes */
+	new kills = GetArrayCell(players_stats,killer,2*killer_role) +1;
+	new deaths = GetArrayCell(players_stats,killer,victim_role) +1 ;
+
+	/* store into <adt array> player_stats */
+	SetArrayCell(players_stats,killer,kills,2*killer_role);
+	SetArrayCell(players_stats,killer,deaths,victim_role);
 }
 
 /*
@@ -182,8 +206,8 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 
 			// populate player arrays
 			PushArrayString(players,steam_id);
-			PushArrayArray(players_stats,{0,0});
 			PushArrayArray(players_times,{0.0,0.0});
+			PushArrayCell(players_stats,0);
 
 			// create timer for player
 			CreateTimer(GetConVarFloat(sm_skillInterval),incrementPlayerTimer,i,TIMER_REPEAT);
@@ -226,6 +250,8 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 
 		new Handle:hQuery = SQL_Query(db,query);
 		CloseHandle(hQuery);
+
+		/* do the same for the kill stat information */
 	}
 
 	/* post to remote website to initiate calculations */
