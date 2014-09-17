@@ -164,6 +164,8 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 		return;
 	}
 
+	decl kills[20]; decl deaths[20];
+
 	/* get client index */
 	new killer = GetClientOfUserId(GetEventInt(event,"attacker"));
 	new victim = GetClientOfUserId(GetEventInt(event,"userid"));
@@ -177,12 +179,16 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 	victim = getPlayerID(victim);
 
 	/* get old stats for increment purposes */
-	new kills = GetArrayCell(players_stats,killer,19-killer_role) +1;
-	new deaths = GetArrayCell(players_stats,victim,19-victim_role) +1 ;
+	GetArrayArray(players_stats,killer,kills);
+	GetArrayArray(players_stats,victim,deaths);
+
+	/* increment data */
+	deaths[victim_role]++; 
+	kills[19-killer_role]++;
 
 	/* store into <adt array> player_stats */
-	SetArrayCell(players_stats,killer,kills,19-killer_role);
-	SetArrayCell(players_stats,victim,deaths,19-victim_role);
+	SetArrayArray(players_stats,killer,kills);
+	SetArrayArray(players_stats,victim,deaths);
 }
 
 /*
@@ -212,7 +218,8 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 			// populate player arrays
 			PushArrayString(players,steam_id);
 			PushArrayArray(players_times,{0.0,0.0});
-			PushArrayCell(players_stats,0);
+			PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
+						      0,0,0,0,0,0,0,0,0,0});
 
 			// create timer for player
 			CreateTimer(GetConVarFloat(sm_skillInterval),incrementPlayerTimer,i,TIMER_REPEAT);
