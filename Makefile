@@ -1,4 +1,4 @@
 CC = ./spcomp
 
-compile: trueskill.sp
-	$(CC) trueskill.sp
+compile: scripting/trueskill.sp
+	$(CC) scripting/trueskill.sp -oplugins/trueskill.smx
