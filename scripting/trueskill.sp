@@ -355,6 +355,10 @@ getPlayerID(client){
 createDB_tables(){
 	new String:error[255];
 
+        if(!SQL_FastQuery(db,"CREATE TABLE `player_stats` (`player_id` int(11) NOT NULL,`steamID` tinytext NOT NULL,`role` int(11) NOT NULL,`kills` int(11) NOT NULL DEFAULT '0',`deaths` int(11) NOT NULL DEFAULT '0',PRIMARY KEY (`player_id`),UNIQUE KEY `steamID` (`steamID`(100)));")){
+	 PrintToServer("Failed to query (error: %s)", error);
+	}
+
 	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(11,10) NOT NULL,`time_red` DECIMAL(11,10) NOT NULL,`result` INTEGER(1) NOT NULL,`random` INTEGER(6) NOT NULL);")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
