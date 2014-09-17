@@ -40,7 +40,6 @@ Temporary Items
 #sftp configuration file
 sftp-config.json
 
-# ignore compiled versions of plugin 
-*.smx
 
+scripting/*.smx
 spcomp
