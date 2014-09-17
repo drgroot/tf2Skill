@@ -177,12 +177,12 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 	victim = getPlayerID(victim);
 
 	/* get old stats for increment purposes */
-	new kills = GetArrayCell(players_stats,killer,2*killer_role) +1;
-	new deaths = GetArrayCell(players_stats,killer,victim_role) +1 ;
+	new kills = GetArrayCell(players_stats,killer,19-killer_role) +1;
+	new deaths = GetArrayCell(players_stats,victim,19-victim_role) +1 ;
 
 	/* store into <adt array> player_stats */
-	SetArrayCell(players_stats,killer,kills,2*killer_role);
-	SetArrayCell(players_stats,killer,deaths,victim_role);
+	SetArrayCell(players_stats,killer,kills,19-killer_role);
+	SetArrayCell(players_stats,victim,deaths,19-victim_role);
 }
 
 /*
@@ -355,11 +355,11 @@ getPlayerID(client){
 createDB_tables(){
 	new String:error[255];
 
-        if(!SQL_FastQuery(db,"CREATE TABLE `player_stats` (`player_id` int(11) NOT NULL,`steamID` tinytext NOT NULL,`role` int(11) NOT NULL,`kills` int(11) NOT NULL DEFAULT '0',`deaths` int(11) NOT NULL DEFAULT '0',PRIMARY KEY (`player_id`),UNIQUE KEY `steamID` (`steamID`(100)));")){
+        if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `player_stats` (`stat_id` tinytext NOT NULL,`steamID` tinytext NOT NULL,`roles` int(11) NOT NULL,`kills` int(11) NOT NULL DEFAULT '0',`deaths` int(11) NOT NULL DEFAULT '0',UNIQUE KEY `stat_id` (`stat_id`(100)),KEY `steamID` (`steamID`(100)));")){
 	 PrintToServer("Failed to query (error: %s)", error);
 	}
 
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS`temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(11,10) NOT NULL,`time_red` DECIMAL(11,10) NOT NULL,`result` INTEGER(1) NOT NULL,`random` INTEGER(6) NOT NULL);")){
+	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(11,10) NOT NULL,`time_red` DECIMAL(11,10) NOT NULL,`result` INTEGER(1) NOT NULL,`random` INTEGER(6) NOT NULL);")){
 		SQL_GetError(db, error, sizeof(error));
 		PrintToServer("Failed to query (error: %s)", error);
 	}
