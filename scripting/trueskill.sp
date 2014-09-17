@@ -179,16 +179,16 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 	victim = getPlayerID(victim);
 
 	/* get old stats for increment purposes */
-	GetArrayArray(players_stats,killer,kills);
-	GetArrayArray(players_stats,victim,deaths);
+	GetArrayArray(players_stats,killer,kills,sizeof(kills));
+	GetArrayArray(players_stats,victim,deaths,sizeof(deaths));
 
 	/* increment data */
 	deaths[victim_role]++; 
 	kills[19-killer_role]++;
 
 	/* store into <adt array> player_stats */
-	SetArrayArray(players_stats,killer,kills);
-	SetArrayArray(players_stats,victim,deaths);
+	SetArrayArray(players_stats,killer,kills,sizeof(kills));
+	SetArrayArray(players_stats,victim,deaths,sizeof(deaths));
 }
 
 /*
@@ -264,6 +264,21 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		CloseHandle(hQuery);
 
 		/* do the same for the kill stat information */
+		decl player_stats[20];
+		GetArrayArray(players_stats,i,player_stats,sizeof(player_stats));
+
+		/* loop through stats and insert into database */
+		for(new j=0;j<10;j++){
+		  new kills = player_stats[19-j];
+		  new deaths = player_stats[j];
+	    
+		  Format(query,sizeof(query),
+		     "INSERT INTO `player_stats` (stat_id,steamID,role,kills,deaths) VALUES ('%s:%d','%s',%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d;", 
+		     steam_id,j,steam_id,j,kills,deaths,kills,deaths);
+
+		  hQuery = SQL_Query(db,query);
+		  CloseHandle(hQuery);
+		}
 	}
 
 	/* post to remote website to initiate calculations */
