@@ -53,7 +53,7 @@ public Plugin:trueskill =
 	name = "TrueSkill Ranking System",
 	author = "Yusuf Ali",
 	description = "An implementation of TrueSkill into Source games",
-	version = "1.0",
+	version = "1.0.0",
 	url = "http://yusufali.ca/repos/tf2Skill.git/"
 };
 public OnPluginStart(){
