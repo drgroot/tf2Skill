@@ -48,7 +48,7 @@ new Handle:sm_skillInterval = INVALID_HANDLE;
 /*
 delcare plublic variable information
 */
-public Plugin:trueskill = 
+public Plugin:myinfo = 
 {
 	name = "TrueSkill Ranking System",
 	author = "Yusuf Ali",
