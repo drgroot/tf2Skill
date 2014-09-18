@@ -53,7 +53,7 @@ public Plugin:myinfo =
 	name = "TrueSkill Ranking System",
 	author = "Yusuf Ali",
 	description = "An implementation of TrueSkill into Source games",
-	version = "1.0.0",
+	version = "1.0.1",
 	url = "http://yusufali.ca/repos/tf2Skill.git/"
 };
 public OnPluginStart(){
@@ -163,7 +163,6 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 	if(GetEventInt(event,"attacker") <= 0 || GetEventInt(event,"attacker") > MaxClients){
 		return;
 	}
-
 	decl kills[20]; decl deaths[20];
 
 	/* get client index */
@@ -261,7 +260,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 			new_name,player_time[1]/gameDuration,player_time[0]/gameDuration,result,random);
 
 		new Handle:hQuery = SQL_Query(db,query);
-		CloseHandle(hQuery);
+		//CloseHandle(hQuery);
 
 		/* do the same for the kill stat information */
 		decl player_stats[20];
@@ -273,10 +272,17 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		  new deaths = player_stats[j];
 	    
 		  Format(query,sizeof(query),
-		     "INSERT INTO `player_stats` (stat_id,steamID,role,kills,deaths) VALUES ('%s:%d','%s',%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d;", 
+		     "INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES ('%s:%d','%s',%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d;", 
 		     steam_id,j,steam_id,j,kills,deaths,kills,deaths);
 
+		  new String:error[255];
 		  hQuery = SQL_Query(db,query);
+
+		  if(!hQuery){
+		  	SQL_GetError(db, error, sizeof(error));
+			PrintToServer("Failed to query (error: %s)", error);
+		  }
+
 		  CloseHandle(hQuery);
 		}
 	}
@@ -377,7 +383,7 @@ getPlayerID(client){
 createDB_tables(){
 	new String:error[255];
 
-        if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `player_stats` (`stat_id` tinytext NOT NULL,`steamID` tinytext NOT NULL,`roles` int(11) NOT NULL,`kills` int(11) NOT NULL DEFAULT '0',`deaths` int(11) NOT NULL DEFAULT '0',UNIQUE KEY `stat_id` (`stat_id`(100)),KEY `steamID` (`steamID`(100)));")){
+    if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `player_stats` (`stat_id` tinytext NOT NULL,`steamID` tinytext NOT NULL,`roles` int(11) NOT NULL,`kills` int(11) NOT NULL DEFAULT '0',`deaths` int(11) NOT NULL DEFAULT '0',UNIQUE KEY `stat_id` (`stat_id`(100)),KEY `steamID` (`steamID`(100)));")){
 	 PrintToServer("Failed to query (error: %s)", error);
 	}
 
