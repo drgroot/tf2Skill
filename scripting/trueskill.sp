@@ -53,7 +53,7 @@ public Plugin:myinfo =
 	name = "TrueSkill Ranking System",
 	author = "Yusuf Ali",
 	description = "An implementation of TrueSkill into Source games",
-	version = "1.1.0",
+	version = "1.2.0",
 	url = "http://yusufali.ca/repos/tf2Skill.git/"
 };
 public OnPluginStart(){
@@ -270,6 +270,13 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		for(new j=0;j<10;j++){
 		  new kills = player_stats[19-j];
 		  new deaths = player_stats[j];
+
+		  if(kills == 0 && deaths == 0){
+		  	continue;
+		  }
+		  if(kills > 1000 || deaths > 100){
+		  	continue;
+		  }
 	    
 		  Format(query,sizeof(query),
 		     "INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES ('%s:%d','%s',%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d;", 
