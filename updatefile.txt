@@ -4,11 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.0.0"
+			"Latest"	"1.1.0"
 		}
 		
-		"Notes"	"Changed in 1.0.0:"
-		"Notes"	"Added updater configuration"
+		"Notes"	"Changed in 1.1.0:"
+		"Notes"	"Changed the curl url to dev.playtf2.com/test.php"
 	}
 	
 	"Files"

@@ -53,7 +53,7 @@ public Plugin:myinfo =
 	name = "TrueSkill Ranking System",
 	author = "Yusuf Ali",
 	description = "An implementation of TrueSkill into Source games",
-	version = "1.0.1",
+	version = "1.1.0",
 	url = "http://yusufali.ca/repos/tf2Skill.git/"
 };
 public OnPluginStart(){
@@ -290,7 +290,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	/* post to remote website to initiate calculations */
 	new Handle:curl = curl_easy_init();
 	CURL_DEFAULT_OPT(curl);
-	curl_easy_setopt_string(curl, CURLOPT_URL, "http://playtf2.com/test.php");
+	curl_easy_setopt_string(curl, CURLOPT_URL, "http://dev.playtf2.com/test.php");
 	ExecCURL(curl,2);
 }
 
