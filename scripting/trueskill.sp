@@ -73,8 +73,16 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
       return;
 
    client_count--;
+   new player = getPlayerID( GetEventInt(event,"userid") );
 
    /* update player time in array */
+   updatePlayerTimes( player );
+
+   /* update player team */
+   decl player_time[4];
+   GetArrayArray( players_times,player,player_time,sizeof(player_time) );
+   player_time[3] = -1;
+   SetArrayArray(players_times,player,player_time,sizeof(player_time));
 }
 
 /*
@@ -86,8 +94,10 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
       return;
 
    new oTeam = GetEventInt(event,"oldteam");
+   new team = GetEventInt(event,"team");
    new client = GetClientOfUserId(GetEventInt(event,"userid"));
-   decl timeStat[4];
+   decl player_time[4];
+   new curTime = GetTime();
 
    /* ensure its a legit client */
    if(IsFakeClient(client))
@@ -115,11 +125,24 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	     player = FindStringInArray(players,steamID);
 	     PushArrayArray(players_times,{0,0,0,0});
       }
+      
       // store time into array 
+      GetArrayArray( players_times,player,player_time,sizeof(player_time) );
+      player_time[0] = curTime;
+      SetArrayArray(players_times,player,player_time,sizeof(player_time));
    }
+   /* player switched teams*/
    else{
-	 /* player switched teams, deal with it */
+	  /* update time before switch */
+      updatePlayerTimes(player);
+
+      /* get new team */
+      GetArrayArray(players_times,player,player_time,sizeof(player_time));
+      player_time[3] = team;
+      SetArrayArray(players_times,player,player_time,sizeof(player_time));
    }
+
+   
 }
 
 /*
@@ -262,6 +285,9 @@ updatePlayerTimes(client,bool:restart = true){
       }
       case (_:TFTeam_Blue): {
          player_time[2] = player_time[2] + (curTime - player_time[0]);
+      }
+      case (-1): {
+
       }
    }
 
