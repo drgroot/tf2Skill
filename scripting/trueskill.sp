@@ -58,7 +58,7 @@ public OnPluginStart(){
    HookEvent("player_disconnect", Event_pDisconnect);
    RegConsoleCmd("sm_rank",playRank);
 
-   players_times = CreateArray(3,0);
+   players_times = CreateArray(4,0);
    players = CreateArray(sID_size,0);
 }
 
@@ -87,7 +87,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 
    new oTeam = GetEventInt(event,"oldteam");
    new client = GetClientOfUserId(GetEventInt(event,"userid"));
-   decl timeStat[3];
+   decl timeStat[4];
 
    /* ensure its a legit client */
    if(IsFakeClient(client))
@@ -110,10 +110,10 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 
       /* otherwise populate the arrays */
       if(player == -1){
-	 // populate player arrays
-	 PushArrayString(players,steamID);
-	 player = FindStringInArray(players,steamID);
-	 PushArrayArray(players_times,{0,0,0});
+	     // populate player arrays
+	     PushArrayString(players,steamID);
+	     player = FindStringInArray(players,steamID);
+	     PushArrayArray(players_times,{0,0,0,0});
       }
       // store time into array 
    }
@@ -138,14 +138,15 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
    for(new i=1;i<= MaxClients;i++){
       /* ensures client is connected */
       if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){
-	 client_count++;
-	 steam_id = getSteamID(i);
+	     client_count++;
+	     steam_id = getSteamID(i);
 
-	 // populate player arrays
-	 new timeData[3] = {0,0,0,};
-	 timeData[0] = curTime;
-	 PushArrayString(players,steam_id);
-	 PushArrayArray(players_times,timeData);
+	     // populate player arrays
+	     new timeData[4] = {0,0,0,0};
+	     timeData[0] = curTime; timeData[3] = GetClientTeam(i);
+
+	     PushArrayString(players,steam_id);
+	     PushArrayArray(players_times,timeData);
       }
    }
 
@@ -164,27 +165,33 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
    
    /* declare useful buffers */
    decl String:steam_id[sID_size];
-   decl player_time[3];
+   new String:query[QUERY_SIZE];
+   decl player_time[4];
 
    /* declare useful comparison */
    new result = GetEventInt(event,"team");
    new random = GetRandomInt(0,400);
-   new curTime = GetTime();
+   new gameDuration = game_start - GetTime();
 
    /* ensure that the game was not a farm fest */
    if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) 
       return;
 
    for(new i=0;i<GetArraySize(players);i++){
+      /* update player time information */
+      updatePlayerTimes(i,false);
+
       /* declare useful constants */
       GetArrayArray( players_times,i,player_time,sizeof(player_time) );
       steam_id = getSteamID(i);
+
+      new blue = player_time[2];
+      new red = player_time[1];
    
       /* insert data into database */
-
-      /* build insert query */
-
-		
+      Format(query,sizeof(query),"INSERT INTO `temp` VALUES('%s',%f,%f,%d,%d);",
+      steam_id,blue/gameDuration, red/gameDuration,result,random);
+      SQL_TQuery(db,T_query,query,i);
    }
 }
 
@@ -239,6 +246,30 @@ String:getSteamID(client){
    decl String:steam_id[20];
    GetClientAuthString(client,steam_id,sizeof(steam_id),true);
    return steam_id; 
+}
+
+updatePlayerTimes(client,bool:restart = true){
+   decl player_time[4]; 
+   new curTime = GetTime();
+
+   GetArrayArray( players_times,client,player_time,sizeof(player_time) );
+   new curTeam = player_time[3];
+
+   /* determine which team, and increment */
+   switch(curTeam){
+      case (_:TFTeam_Red): {
+         player_time[1] = player_time[1] + (curTime - player_time[0]);
+      }
+      case (_:TFTeam_Blue): {
+         player_time[2] = player_time[2] + (curTime - player_time[0]);
+      }
+   }
+
+   if(restart){
+      player_time[0] = curTime;
+   }
+
+   SetArrayArray(players_times,client,player_time,sizeof(player_time));
 }
 
 /* prints an error for non threaded stuff */
