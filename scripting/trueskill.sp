@@ -24,6 +24,7 @@ requires:
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 
+new Handle:db;
 new Handle:players_times;
 new Handle:players;
 new game_start = 0;
@@ -37,6 +38,10 @@ new Handle:sm_minClients = INVALID_HANDLE;
 public Plugin:myinfo = {name = PLUGIN_NAME,author = AUTHOR,description = "",version = VERSION,url = URL};
 
 public OnPluginStart(){
+   /* connect to database */
+   new String:error[255];
+   db = SQL_DefConnect(error,sizeof(error));
+
    /* add to updater */
    Updater_AddPlugin(UPDATE_URL);	
 
