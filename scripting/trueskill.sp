@@ -14,81 +14,51 @@ requires:
 
 #include <sourcemod>
 #include <dbi>
-#include <cURL>
 #include <tf2_stocks>
 #include <updater>
 
-#define UPDATE_URL "http://playtf2.com/tf2Skill/updatefile.txt"
-
-#define USE_THREAD				1
-new CURL_Default_opt[][2] = {
-#if USE_THREAD
-	{_:CURLOPT_NOSIGNAL,1},
-#endif
-	{_:CURLOPT_NOPROGRESS,1},
-	{_:CURLOPT_TIMEOUT,30},
-	{_:CURLOPT_CONNECTTIMEOUT,60},
-	{_:CURLOPT_VERBOSE,0}
-};
-#define CURL_DEFAULT_OPT(%1) curl_easy_setopt_int_array(%1, CURL_Default_opt, sizeof(CURL_Default_opt))
+#define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
+#define PLUGIN_NAME	"TrueSkill Ranking System"
+#define AUTHOR 		"Yusuf Ali"
+#define VERSION 	"1.2.0"
+#define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 
 new Handle:players_times;
-new Handle:players_stats;
 new Handle:players;
 new Handle:db;
-
-new Float:gameDuration = 0.0;
-new gameEnd = 0;
+new game_start = 0;
+new track_game = 0;
 new client_count = 0;
 
 /* define convars */
 new Handle:sm_minClients = INVALID_HANDLE;
-new Handle:sm_skillInterval = INVALID_HANDLE;
 
-/*
-delcare plublic variable information
-*/
-public Plugin:myinfo = 
-{
-	name = "TrueSkill Ranking System",
-	author = "Yusuf Ali",
-	description = "An implementation of TrueSkill into Source games",
-	version = "1.2.0",
-	url = "http://yusufali.ca/repos/tf2Skill.git/"
-};
+/* delcare plublic variable information */
+public Plugin:myinfo = {name = PLUGIN_NAME,author = AUTHOR,description = "",version = VERSION,url = URL};
+
 public OnPluginStart(){
+	/* add to updater */
 	Updater_AddPlugin(UPDATE_URL);	
-
-	/* connect to database */
-	connect_database();
 
 	/* create database tables */
 	createDB_tables();
 
 	/* define convars */
 	sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
-	sm_skillInterval = CreateConVar("sm_skillInterval","0.5","TrueSkill interval");
 
 	/* bind methods to game events */
 	HookEvent("player_team",Event_pTeam);
-	HookEvent("player_death", Event_pDeath);
 	HookEvent("teamplay_round_start", Event_rStart);
 	HookEvent("teamplay_round_win",Event_rEnd);
 	HookEvent("player_disconnect", Event_pDisconnect);
 	RegConsoleCmd("sm_rank",playRank);
 
 	players_times = CreateArray(3,0);
-	players_stats = CreateArray(20,0);
 	players = CreateArray(20,0);
 }
 
 
-
-
-
 /* METHODS FOR GAME EVENTS */
-
-
 /*
 	- keep track of clients disconnecting
 	- update client playing time
@@ -103,7 +73,9 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 */
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	new oTeam = GetEventInt(event,"oldteam");
-	new client = GetClientOfUserId(GetEventInt(event,"userid")); 
+	new client = GetClientOfUserId(GetEventInt(event,"userid"));
+
+	decl timeData[20];
 
 	/* ensure its a legit client */
 	if(IsFakeClient(client))
@@ -137,57 +109,15 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 			// populate player arrays
 			PushArrayString(players,steam_id);
 			player = FindStringInArray(players,steam_id);
-			
-			PushArrayArray(players_stats,{0,0});
-			PushArrayArray(players_times,{0.0,0.0});
+			PushArrayArray(players_times,{0,0});
 		}
 		
 		/* create timer */
-		CreateTimer(GetConVarFloat(sm_skillInterval),incrementPlayerTimer,client,TIMER_REPEAT);
+		
 	}
-}
-
-/*
-	- store kills and deaths
-	 - for statistics purposes
-	 - no affect on ranking,
-	   just to make everyone happy
-*/
-public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
-	/* ensure not a fake death */
-	if (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER) { 
-    	return;  
+	else{
+		/* player switched teams, deal with it */
 	}
-
-	/* ensure killed by another player */
-	if(GetEventInt(event,"attacker") <= 0 || GetEventInt(event,"attacker") > MaxClients){
-		return;
-	}
-	decl kills[20]; decl deaths[20];
-
-	/* get client index */
-	new killer = GetClientOfUserId(GetEventInt(event,"attacker"));
-	new victim = GetClientOfUserId(GetEventInt(event,"userid"));
-
-	/* get clients role */
-	new TFClassType:killer_role = TF2_GetPlayerClass(killer);
-	new TFClassType:victim_role = TF2_GetPlayerClass(victim);
-
-	/* get adt_array index */
-	killer = getPlayerID(killer); 
-	victim = getPlayerID(victim);
-
-	/* get old stats for increment purposes */
-	GetArrayArray(players_stats,killer,kills,sizeof(kills));
-	GetArrayArray(players_stats,victim,deaths,sizeof(deaths));
-
-	/* increment data */
-	deaths[victim_role]++; 
-	kills[19-killer_role]++;
-
-	/* store into <adt array> player_stats */
-	SetArrayArray(players_stats,killer,kills,sizeof(kills));
-	SetArrayArray(players_stats,victim,deaths,sizeof(deaths));
 }
 
 /*
@@ -198,12 +128,9 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	/* connect to database */
 	connect_database();
 
-	gameDuration=0.0; gameEnd = 0;
-	ClearArray(players); 
-	ClearArray(players_stats); ClearArray(players_times); 
-
-	// start the timer for the game
-	CreateTimer(GetConVarFloat(sm_skillInterval), incrementGameTimer, _, TIMER_REPEAT);
+	/* restart required variables */
+	game_start = GetTime(); client_count = 0;
+	ClearArray(players); ClearArray(players_times); 
 
 	//loop through all players that are alive
 	for(new i=1;i<= MaxClients;i++){
@@ -216,14 +143,12 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 
 			// populate player arrays
 			PushArrayString(players,steam_id);
-			PushArrayArray(players_times,{0.0,0.0});
-			PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
-						      0,0,0,0,0,0,0,0,0,0});
-
-			// create timer for player
-			CreateTimer(GetConVarFloat(sm_skillInterval),incrementPlayerTimer,i,TIMER_REPEAT);
+			PushArrayArray(players_times,{GetTime(),0,0});
 		}
 	}
+
+	// determine if to track the game or not
+	track_game  = (client_count >= GetConVarInt("sm_minClients"));
 }
 
 /*
@@ -303,49 +228,6 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 
 
 
-/* TIMER METHODS */
-
-public Action:incrementGameTimer(Handle:timer){
-	if(gameEnd) 
-		return Plugin_Stop;
-	
-	gameDuration = gameDuration + GetConVarFloat(sm_skillInterval);
-
-	return Plugin_Continue;
-}
-
-public Action:incrementPlayerTimer(Handle:timer, any:client){
-	/* increments if player is connected and game is going */
-	if ( (gameEnd) || (! (IsClientInGame(client))  )  )
-		return Plugin_Stop;
-	
-	/* determine corresponding playerID */
-	new player = getPlayerID(client);
-	
-	/* get the required data array information */
-	decl Float:player_time[2];
-	GetArrayArray(players_times,player,player_time,sizeof(player_time)); 
-
-	/* determine which team counter to increment */
-	switch (GetClientTeam(client)){
-		case (_:TFTeam_Red): {
-			player_time[0] = player_time[0] + GetConVarFloat(sm_skillInterval);
-		}
-
-		case (_:TFTeam_Blue): {
-			player_time[1] = player_time[1] + GetConVarFloat(sm_skillInterval);
-		}
-	}
-	
-	/* store array back into adt */
-	SetArrayArray(players_times,player,player_time,sizeof(player_time));
-	
-	return Plugin_Continue;
-}
-
-
-
-
 /* REGISTERED ACTION COMMANDS */
 
 /*
@@ -388,6 +270,7 @@ getPlayerID(client){
 
 /* creates the mysql tables if they are not created */
 createDB_tables(){
+	connect_database();
 	new String:error[255];
 
     if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `player_stats` (`stat_id` tinytext NOT NULL,`steamID` tinytext NOT NULL,`roles` int(11) NOT NULL,`kills` int(11) NOT NULL DEFAULT '0',`deaths` int(11) NOT NULL DEFAULT '0',UNIQUE KEY `stat_id` (`stat_id`(100)),KEY `steamID` (`steamID`(100)));")){
@@ -420,28 +303,3 @@ discon_database(){
 	CloseHandle(db);
 }
 */
-
-stock ExecCURL(Handle:curl, current_test)
-{
-#if USE_THREAD
-	curl_easy_perform_thread(curl, onComplete, current_test);
-#else
-	new CURLcode:code = curl_load_opt(curl);
-	if(code != CURLE_OK) {
-		PrintTestCaseDebug(current_test, "curl_load_opt Error");
-		PrintcUrlError(code);
-		CloseHandle(curl);
-		return;
-	}
-	
-	code = curl_easy_perform(curl);
-	
-	onComplete(curl, code, current_test);
-
-#endif
-}
-
-public onComplete(Handle:hndl, CURLcode: code, any:data)
-{
-	CloseHandle(hndl);
-}
