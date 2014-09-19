@@ -23,6 +23,7 @@ requires:
 #define VERSION 	"1.2.0"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
+#define QUERY_SIZE   512
 
 new Handle:db;
 new Handle:players_times;
@@ -101,6 +102,11 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
       client_count++;
 
       /* add to database, and update last connect */
+      decl String:query[QUERY_SIZE];
+      Format(query,sizeof(query),
+      "insert into players (steamID) values ('%s') on duplicate key update lastConnect = CURRENT_TIMESTAMP;",
+         steamID);
+      SQL_TQuery(db,T_query,query,client);
 
       /* otherwise populate the arrays */
       if(player == -1){
@@ -200,12 +206,26 @@ public Action:playRank(client, args){
 
       /* 2. query database and return player skill
             and sigma, and rank (1- x etc)   */
+   decl String:query[QUERY_SIZE];
+   Format(query,sizeof(query),
+      "select count(*)+1 rank,my.sigma from players my left join players others \
+      on others.rank > my.rank where my.SteamID = '%s';", steamID);
+
+   SQL_LockDatabase(db);
+   new Handle:hQuery = SQL_Query(db,query);
+   printErr(hQuery);
+   while(SQL_FetchRow(hQuery)){
+      rank = SQL_FetchInt(hQuery,0); sigma = SQL_FetchFloat(hQuery,1);
+   }
+   SQL_UnlockDatabase(db);
+   CloseHandle(hQuery);
 
       /* 3. display to user in chat box */
-   PrintToChat( client,"Rank of %d, with %.2f units of uncertainty",rank,sigma );		
+   PrintToChat( client,"Rank #%d, with %.2f units of uncertainty",rank,sigma );		
 
    return Plugin_Handled;
 }
+
 
 /* UTILITY COMMANDS */
 
@@ -220,3 +240,28 @@ String:getSteamID(client){
    GetClientAuthString(client,steam_id,sizeof(steam_id),true);
    return steam_id; 
 }
+
+/* prints an error for non threaded stuff */
+printErr(Handle:hndle){
+   decl String:error[QUERY_SIZE];
+   if(hndle == INVALID_HANDLE){
+      SQL_GetError(db,error,sizeof(error));
+      LogError("TrueSkill - Query Failed: %s",error);
+   }
+}
+
+/* prints an error given handle and error string */
+printTErr(Handle:hndle,const String:error[]){
+   if(hndle == INVALID_HANDLE){
+      LogError("TrueSkill - Query Failed: %s",error);
+      return 0;
+   }
+   return 1;
+}
+
+/* typical threaded query prototype */
+public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
+   printTErr(hndle, error );
+}
+
+
