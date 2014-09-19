@@ -41,7 +41,6 @@ public OnPluginStart(){
 	Updater_AddPlugin(UPDATE_URL);	
 
 	/* create database tables */
-	createDB_tables();
 
 	/* define convars */
 	sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
@@ -91,12 +90,6 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		GetClientAuthString(client,SteamID,sizeof(SteamID),true);
 
 		/* add to database, and update last connect */
-		new String:query[512];
-		Format(query,sizeof(query), 
-			"insert into players (steamID) values ('%s') on duplicate key update lastConnect = CURRENT_TIMESTAMP;",
-			SteamID);
-		new Handle:hQuery = SQL_Query(db,query);
-		CloseHandle(hQuery);
 
 		/* if joined, determine if already rejoined */
 		new player = getPlayerID(client);
@@ -109,7 +102,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 			// populate player arrays
 			PushArrayString(players,steam_id);
 			player = FindStringInArray(players,steam_id);
-			PushArrayArray(players_times,{0,0});
+			PushArrayArray(players_times,{ GetTime(), 0,0});
 		}
 		
 		/* create timer */
@@ -125,9 +118,6 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	 - structure data
 */
 public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
-	/* connect to database */
-	connect_database();
-
 	/* restart required variables */
 	game_start = GetTime(); client_count = 0;
 	ClearArray(players); ClearArray(players_times); 
@@ -156,11 +146,8 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	 - post data to trueskill implementation
 */
 public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
-	gameEnd = 1;
 	new result = GetEventInt(event,"team");
 	new random = GetRandomInt(0,400);
-
-	connect_database();
 
 	/* ensure that the game was not a farm fest */
 	if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) {
@@ -175,55 +162,11 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		GetArrayString(players,i,steam_id,sizeof(steam_id));
 
 		/* insert data into database */
-		new String:query[512]; new buffer_len = strlen(steam_id)*2 +1;
-		new String:new_name[buffer_len];
 
 		/* build insert query */
-		SQL_EscapeString(db,steam_id,new_name,buffer_len);
-		Format(query,sizeof(query), 
-			"INSERT INTO `temp` VALUES('%s',%f,%f,%d,%d);",
-			new_name,player_time[1]/gameDuration,player_time[0]/gameDuration,result,random);
 
-		new Handle:hQuery = SQL_Query(db,query);
-		//CloseHandle(hQuery);
-
-		/* do the same for the kill stat information */
-		decl player_stats[20];
-		GetArrayArray(players_stats,i,player_stats,sizeof(player_stats));
-
-		/* loop through stats and insert into database */
-		for(new j=0;j<10;j++){
-		  new kills = player_stats[19-j];
-		  new deaths = player_stats[j];
-
-		  if(kills == 0 && deaths == 0){
-		  	continue;
-		  }
-		  if(kills > 1000 || deaths > 100){
-		  	continue;
-		  }
-	    
-		  Format(query,sizeof(query),
-		     "INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES ('%s:%d','%s',%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d;", 
-		     steam_id,j,steam_id,j,kills,deaths,kills,deaths);
-
-		  new String:error[255];
-		  hQuery = SQL_Query(db,query);
-
-		  if(!hQuery){
-		  	SQL_GetError(db, error, sizeof(error));
-			PrintToServer("Failed to query (error: %s)", error);
-		  }
-
-		  CloseHandle(hQuery);
-		}
+		
 	}
-
-	/* post to remote website to initiate calculations */
-	new Handle:curl = curl_easy_init();
-	CURL_DEFAULT_OPT(curl);
-	curl_easy_setopt_string(curl, CURLOPT_URL, "http://dev.playtf2.com/test.php");
-	ExecCURL(curl,2);
 }
 
 
@@ -235,7 +178,6 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	database implementation
 */
 public Action:playRank(client, args){
-	connect_database();
 	decl String:SteamID[20];
 	new rank = 0; new Float:sigma = 100.0;
 
@@ -245,13 +187,6 @@ public Action:playRank(client, args){
 
 	 /* 2. query database and return player skill
                and sigma, and rank (1- x etc)   */
-	decl String:query[250];
-	Format(query,sizeof(query)," select count(*)+1 rank,my.sigma from players my left join players others on others.rank > my.rank where my.SteamID = '%s';",SteamID);
-	new Handle:hQuery = SQL_Query(db,query);
-
-	while(SQL_FetchRow(hQuery)){
-		rank = SQL_FetchInt(hQuery,0); sigma = SQL_FetchFloat(hQuery,1);
-	}
 
 	 /* 3. display to user in chat box */
 	PrintToChat(client,"Rank of %d, with %.2f units of uncertainty",rank,sigma);		
@@ -268,38 +203,3 @@ getPlayerID(client){
 	return FindStringInArray(players,steam_id);
 }
 
-/* creates the mysql tables if they are not created */
-createDB_tables(){
-	connect_database();
-	new String:error[255];
-
-    if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `player_stats` (`stat_id` tinytext NOT NULL,`steamID` tinytext NOT NULL,`roles` int(11) NOT NULL,`kills` int(11) NOT NULL DEFAULT '0',`deaths` int(11) NOT NULL DEFAULT '0',UNIQUE KEY `stat_id` (`stat_id`(100)),KEY `steamID` (`steamID`(100)));")){
-	 PrintToServer("Failed to query (error: %s)", error);
-	}
-
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `temp` (`steamid` MEDIUMTEXT NOT NULL,`time_blue` DECIMAL(11,10) NOT NULL,`time_red` DECIMAL(11,10) NOT NULL,`result` INTEGER(1) NOT NULL,`random` INTEGER(6) NOT NULL);")){
-		SQL_GetError(db, error, sizeof(error));
-		PrintToServer("Failed to query (error: %s)", error);
-	}
-
-	if(!SQL_FastQuery(db,"CREATE TABLE IF NOT EXISTS `players` (`player_id` INTEGER(11) NOT NULL AUTO_INCREMENT, `steamID` TEXT NOT NULL,`lastConnect` TIMESTAMP,`mew` DECIMAL(20,17) NOT NULL DEFAULT 25.0,`sigma` DECIMAL(20,17) NOT NULL DEFAULT 8.3333,`rank` DECIMAL(20,17) NOT NULL DEFAULT 0.0 ,PRIMARY KEY (`player_id`),UNIQUE(steamid(100)));")){
-		SQL_GetError(db, error, sizeof(error));
-		PrintToServer("Failed to query (error: %s)", error);
-	}
-}
-
-/* connects to database */
-connect_database(){
-	if(db == INVALID_HANDLE){
-		new String:error[255]
-		db = SQL_Connect("default", true, error, sizeof(error));
-		if( db == INVALID_HANDLE)
-			PrintToServer("Could not connect: %s", error);
-	}
-}
-
-/* close database connection 
-discon_database(){
-	CloseHandle(db);
-}
-*/
