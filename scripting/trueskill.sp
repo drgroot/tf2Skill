@@ -83,7 +83,7 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 
    /* update player team */
    decl player_time[4];
-   GetArrayArray( players_times,player,player_time,sizeof(player_time) );
+   GetArrayArray( players_times,player,p layer_time,sizeof(player_time) );
    player_time[3] = -1;
    SetArrayArray(players_times,player,player_time,sizeof(player_time));
 }
@@ -93,8 +93,7 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 	- update client playing time
 */
 public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
-   if(!track_game)
-      return;
+   
 
    new oTeam = GetEventInt(event,"oldteam");
    new team = GetEventInt(event,"team");
@@ -109,6 +108,13 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
    /* get steamID */
    decl String:steamID[sID_size]; steamID = getSteamID( client );
    new player = getPlayerID( client );
+
+   /* store user in quick hash lookup table */
+   SetArrayString(player_client, GetEventInt(event,"userid"), steamID);
+
+   /* ensure we are tracking data */
+   if(!track_game)
+      return;
 
    /* determine if player switched teams or joined */
    if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
@@ -144,8 +150,6 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
       player_time[3] = team;
       SetArrayArray(players_times,player,player_time,sizeof(player_time));
    }
-
-   SetArrayString(player_client, client, steamID);
 }
 
 /*
