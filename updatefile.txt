@@ -4,11 +4,8 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.2.0"
+			"Latest"	“2.0.0”
 		}
-		
-		"Notes"	"Changed in 1.2.0:"
-		"Notes"	"added stablizer to fix things"
 	}
 	
 	"Files"

@@ -20,7 +20,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"1.2.0"
+#define VERSION 	"2.0.0"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -28,6 +28,7 @@ requires:
 new Handle:db;
 new Handle:players_times;
 new Handle:players;
+new Handle:player_client;
 new game_start = 0;
 new track_game = 0;
 new client_count = 0;
@@ -46,8 +47,6 @@ public OnPluginStart(){
    /* add to updater */
    Updater_AddPlugin(UPDATE_URL);	
 
-   /* create database tables */
-
    /* define convars */
    sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
 
@@ -60,6 +59,7 @@ public OnPluginStart(){
 
    players_times = CreateArray(4,0);
    players = CreateArray(sID_size,0);
+   player_client = CreateArray(sID_size,0);
 }
 
 
@@ -73,7 +73,10 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
       return;
 
    client_count--;
-   new player = getPlayerID( GetEventInt(event,"userid") );
+
+   decl String:steam_id[sID_size];
+   GetArrayString(player_client, GetEventInt(event,"userid"),steam_id,sizeof(steam_id));
+   new player = FindStringInArray( players,steam_id );
 
    /* update player time in array */
    updatePlayerTimes( player );
@@ -130,6 +133,9 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
       GetArrayArray( players_times,player,player_time,sizeof(player_time) );
       player_time[0] = curTime;
       SetArrayArray(players_times,player,player_time,sizeof(player_time));
+
+      /* store steam id for hash lookup */
+      SetArrayString(player_client, player, steamID);
    }
    /* player switched teams*/
    else{
@@ -140,9 +146,10 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
       GetArrayArray(players_times,player,player_time,sizeof(player_time));
       player_time[3] = team;
       SetArrayArray(players_times,player,player_time,sizeof(player_time));
-   }
 
-   
+      /* store steam id for hash lookup */
+      SetArrayString(player_client, player, steamID);
+   }
 }
 
 /*
@@ -171,6 +178,7 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	     PushArrayString(players,steam_id);
 	     PushArrayArray(players_times,timeData);
       }
+      PushArrayString(player_client,"");
    }
 
    // determine if to track the game or not
@@ -194,7 +202,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
    /* declare useful comparison */
    new result = GetEventInt(event,"team");
    new random = GetRandomInt(0,400);
-   new gameDuration = game_start - GetTime();
+   new Float:gameDuration = float(GetTime() - game_start);
 
    /* ensure that the game was not a farm fest */
    if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) 
@@ -206,14 +214,14 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 
       /* declare useful constants */
       GetArrayArray( players_times,i,player_time,sizeof(player_time) );
-      steam_id = getSteamID(i);
+      GetArrayString(players,i,steam_id,sizeof(steam_id));
 
-      new blue = player_time[2];
-      new red = player_time[1];
+      new Float:blue = float(player_time[2]);
+      new Float:red = float(player_time[1]);
    
       /* insert data into database */
-      Format(query,sizeof(query),"INSERT INTO `temp` VALUES('%s',%f,%f,%d,%d);",
-      steam_id,blue/gameDuration, red/gameDuration,result,random);
+      Format(query,sizeof(query),"INSERT INTO `temp` (steamid,time_blue,time_red,result,random) \
+       VALUES('%s',%f,%f,%d,%d);", steam_id,blue/gameDuration, red/gameDuration,result,random);
       SQL_TQuery(db,T_query,query,i);
    }
 }
@@ -227,7 +235,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	database implementation
 */
 public Action:playRank(client, args){
-   decl String:steamID[20];
+   decl String:steamID[sID_size];
    new rank = 0; new Float:sigma = 100.0;
 
    /* steps */
@@ -266,7 +274,7 @@ getPlayerID(client){
 
 /* return players steamID */
 String:getSteamID(client){
-   decl String:steam_id[20];
+   decl String:steam_id[sID_size];
    GetClientAuthString(client,steam_id,sizeof(steam_id),true);
    return steam_id; 
 }
@@ -290,7 +298,7 @@ updatePlayerTimes(client,bool:restart = true){
 
       }
    }
-
+   
    if(restart){
       player_time[0] = curTime;
    }
