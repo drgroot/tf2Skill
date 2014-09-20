@@ -20,7 +20,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.0.2"
+#define VERSION 	"2.1"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -28,7 +28,6 @@ requires:
 new Handle:db;
 new Handle:players_times;
 new Handle:players;
-new Handle:player_client;
 new game_start = 0;
 new track_game = 0;
 new client_count = 0;
@@ -61,7 +60,6 @@ public OnPluginStart(){
 
    players_times = CreateArray(4,0);
    players = CreateArray(sID_size,0);
-   player_client = CreateArray(sID_size,0);
 }
 
 public OnLibraryAdded(const String:name[])
@@ -85,8 +83,11 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
    client_count--;
 
    decl String:steam_id[sID_size];
-   GetArrayString(player_client, GetEventInt(event,"userid"),steam_id,sizeof(steam_id));
+   GetEventString(event,"networkid",steam_id,sizeof(steam_id));
    new player = FindStringInArray( players,steam_id );
+
+   if(player == -1)
+   	return;
 
    /* update player time in array */
    updatePlayerTimes( player );
@@ -118,9 +119,6 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
    /* get steamID */
    decl String:steamID[sID_size]; steamID = getSteamID( client );
    new player = getPlayerID( client );
-
-   /* store user in quick hash lookup table */
-   SetArrayString(player_client, GetEventInt(event,"userid"), steamID);
 
    /* ensure we are tracking data */
    if(!track_game)
@@ -188,7 +186,6 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	     PushArrayString(players,steam_id);
 	     PushArrayArray(players_times,timeData);
       }
-      PushArrayString(player_client,"");
    }
 
    // determine if to track the game or not
