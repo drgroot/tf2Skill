@@ -4,9 +4,9 @@
 	{
 		"Version"
 		{
-			"Latest"	“2.1”
+			"Latest"	"2.1"
 		}
-		"Notes"	“Version “2.1
+		"Notes"	"Version 2.1"
 	}
 	
 	"Files"
