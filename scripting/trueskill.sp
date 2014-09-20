@@ -45,7 +45,9 @@ public OnPluginStart(){
    db = SQL_DefConnect(error,sizeof(error));
 
    /* add to updater */
-   Updater_AddPlugin(UPDATE_URL);	
+   if (LibraryExists("updater")){
+		Updater_AddPlugin(UPDATE_URL);
+   }
 
    /* define convars */
    sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
@@ -60,6 +62,14 @@ public OnPluginStart(){
    players_times = CreateArray(4,0);
    players = CreateArray(sID_size,0);
    player_client = CreateArray(sID_size,0);
+}
+
+public OnLibraryAdded(const String:name[])
+{
+    if (StrEqual(name, "updater"))
+    {
+        Updater_AddPlugin(UPDATE_URL)
+    }
 }
 
 
