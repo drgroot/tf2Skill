@@ -20,7 +20,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.0.0"
+#define VERSION 	"2.0.1"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -133,9 +133,6 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
       GetArrayArray( players_times,player,player_time,sizeof(player_time) );
       player_time[0] = curTime;
       SetArrayArray(players_times,player,player_time,sizeof(player_time));
-
-      /* store steam id for hash lookup */
-      SetArrayString(player_client, player, steamID);
    }
    /* player switched teams*/
    else{
@@ -146,10 +143,9 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
       GetArrayArray(players_times,player,player_time,sizeof(player_time));
       player_time[3] = team;
       SetArrayArray(players_times,player,player_time,sizeof(player_time));
-
-      /* store steam id for hash lookup */
-      SetArrayString(player_client, player, steamID);
    }
+
+   SetArrayString(player_client, client, steamID);
 }
 
 /*
