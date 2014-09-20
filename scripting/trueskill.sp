@@ -20,7 +20,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.1"
+#define VERSION 	"2.2"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -82,12 +82,12 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 
    client_count--;
 
-   decl String:steam_id[sID_size];
-   GetEventString(event,"networkid",steam_id,sizeof(steam_id));
-   new player = FindStringInArray( players,steam_id );
+   decl String:steam_id3[sID_size];
+   decl String:steam_id2[sID_size];
+   GetEventString(event,"networkid",steam_id3,sizeof(steam_id3));
 
-   if(player == -1)
-   	return;
+   Steam3To2(steam_id3,steam_id2,sID_size);
+   new player = FindStringInArray( players,steam_id2 );
 
    /* update player time in array */
    updatePlayerTimes( player );
@@ -334,6 +334,13 @@ printTErr(Handle:hndle,const String:error[]){
 /* typical threaded query prototype */
 public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
    printTErr(hndle, error );
+}
+
+public Steam3To2(const String:in[], String:out[], maxlen)
+{
+        new m_unAccountID = StringToInt(in[5]);
+        new m_unMod = m_unAccountID % 2;
+        Format(out, maxlen, "STEAM_0:%d:%d", m_unMod, (m_unAccountID-m_unMod)/2);
 }
 
 
