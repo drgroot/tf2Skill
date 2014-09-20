@@ -83,7 +83,7 @@ public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
 
    /* update player team */
    decl player_time[4];
-   GetArrayArray( players_times,player,p layer_time,sizeof(player_time) );
+   GetArrayArray( players_times,player,player_time,sizeof(player_time) );
    player_time[3] = -1;
    SetArrayArray(players_times,player,player_time,sizeof(player_time));
 }
