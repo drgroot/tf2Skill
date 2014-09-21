@@ -2,11 +2,14 @@
 
 import trueskill as skill;
 import pymysql;
-import ConfigParser; 
+import ConfigParser;
+import os
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
 config = ConfigParser.ConfigParser();
 
 # read configuration file
-config.read("config.file")
+config.read("%s/config.file" % current_dir)
 host = config.get('database','host')
 user = config.get('database','user')
 passwd = config.get('database','passwd')
