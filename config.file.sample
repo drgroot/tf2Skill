@@ -1,0 +1,5 @@
+[database]
+host: dev.yusufali.ca
+user: playtf2
+db:	playtf2
+passwd: password

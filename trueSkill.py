@@ -2,9 +2,19 @@
 
 import trueskill as skill;
 import pymysql;
+import ConfigParser; 
+config = ConfigParser.ConfigParser();
 
-conn = pymysql.connect(host='127.0.0.1',port=3306,
-	user='playtf2',passwd='j506JyusufSSfMuu8e',db='playtf2');
+# read configuration file
+config.read("config.file")
+host = config.get('database','host')
+user = config.get('database','user')
+passwd = config.get('database','passwd')
+datb = config.get('database','db')
+
+# connect to mysql database
+conn = pymysql.connect(host=host,port=3306,
+	user=user,passwd=passwd,db=datb);
 env = skill.TrueSkill();
 
 # loads old player information
@@ -38,6 +48,8 @@ rank=%(rank)f WHERE steamID='%(steam)s'" % data)
 #### MAIN ####
 ##############
 
+print "-----Running TrueSkill Calculation-----"
+
 cur = conn.cursor(); cur2 = conn.cursor();
 cur.execute("SELECT DISTINCT(random) FROM temp");
 
@@ -46,6 +58,8 @@ for randoms in cur:
 	team_blu = []; team_red = []; steam_blu = [];
 	time_blu = []; time_red = []; steam_red = [];
 	
+	print "\tCalculating group: %d" % random
+
 	cur2.execute("SELECT * FROM temp WHERE random = %d" % random);
 	
 	# load temp table
@@ -70,6 +84,7 @@ for randoms in cur:
 	
 	# ensure people are playing
 	if (len(team_red) + len(team_blu)) < 16:
+		print "\t\t Group was filtered"
 		continue
 
 	# apply TrueSkill calculation
@@ -92,3 +107,5 @@ for randoms in cur:
 cur2.close();
 cur.close();
 conn.close();
+
+print "-----Ending TrueSkill Calculation-----"

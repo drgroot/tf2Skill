@@ -40,6 +40,6 @@ Temporary Items
 #sftp configuration file
 sftp-config.json
 
-
+config.file
 scripting/*.smx
 spcomp
