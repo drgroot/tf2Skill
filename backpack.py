@@ -36,7 +36,7 @@ def getItems():
 	cur.execute("SELECT item_def,price_inRef FROM tradebot_items")
 
 	for row in cur:
-		items_list[row[0]] = float(row[1])
+		items_list[row[0]] = float(0)
 	
 	cur.close()
 
