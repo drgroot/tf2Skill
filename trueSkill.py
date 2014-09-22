@@ -87,8 +87,12 @@ for randoms in cur:
 	
 	# ensure people are playing
 	if (len(team_red) + len(team_blu)) < 16:
-		print "\t\t Group was filtered"
-		continue
+	       # drop group so they stop spamming logs
+	       cur_del = conn.cursor();
+	       cur_del.execute("DELETE FROM temp WHERE random = %d" % random);
+	       conn.commit(); cur_del.close();
+	       print "\t\t Group was filtered"
+	       continue
 
 	# apply TrueSkill calculation
 	if result == 3:
