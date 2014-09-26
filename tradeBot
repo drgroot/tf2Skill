@@ -30,7 +30,7 @@ running(){
 start() {
    if ! running; then
       echo -n "Starting the $NAME ...."
-      start-stop-daemon --start --chuid $USER --user $USER --chdir $BINARYPATH --exec "/usr/bin/screen" -- -dmS $SCREENREF mono SteamBot.exe
+      /sbin/start-stop-daemon --start --chuid $USER --user $USER --chdir $BINARYPATH --exec "/usr/bin/screen" -- -dmS $SCREENREF mono SteamBot.exe
       pgrep -f $BINARYNAME > $PIDFILE
       if [ -s $PIDFILE ]; then
 	 echo "Done"
