@@ -1,9 +1,20 @@
 #!/usr/bin/python
 
-import trueskill as skill;
-import pymysql;
-import ConfigParser;
+#import trueskill as skill;
+#import pymysql;
+#import ConfigParser;
+import socket;
 import os
+
+sock = socket.socket()
+sock.bind((socket.gethostname(), 20000))
+sock.listen(5)
+
+while True:
+	c,addr = sock.accept()
+	print sock.recv(1024)	
+
+exit();
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 config = ConfigParser.ConfigParser();
