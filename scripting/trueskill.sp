@@ -253,7 +253,7 @@ public Action:playRank(client, args){
             and sigma, and rank (1- x etc)   */
    decl String:query[QUERY_SIZE];
    Format(query,sizeof(query),
-      "select count(*)+1 rank,my.sigma from players my left join players others \
+      "select count(*)+1 rank,(my.mew - 3*my.sigma)/50 * 3000 from players my left join players others \
       on others.rank > my.rank where my.SteamID = '%s';", steamID);
 
    SQL_LockDatabase(db);
@@ -266,7 +266,7 @@ public Action:playRank(client, args){
    CloseHandle(hQuery);
 
       /* 3. display to user in chat box */
-   PrintToChat( client,"Rank #%d, with %.2f units of uncertainty",rank,sigma );		
+   PrintToChat( client,"Rank #%d, with an ELO rating of %.2f",rank,sigma );		
 
    return Plugin_Handled;
 }
