@@ -8,7 +8,7 @@ trueskill ranking system.
 Author: Yusuf Ali
 
 requires:
-	curl - initiate trueskill calculations
+	socket - interact with python trueskill server
 
 */
 
@@ -16,6 +16,7 @@ requires:
 #include <dbi>
 #include <tf2_stocks>
 #include <updater>
+#include <socket>
 
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
@@ -28,12 +29,16 @@ requires:
 new Handle:db;
 new Handle:players_times;
 new Handle:players;
+new Handle:socket;
 new game_start = 0;
 new track_game = 0;
 new client_count = 0;
+new gameNumber = 0;
 
 /* define convars */
 new Handle:sm_minClients = INVALID_HANDLE;
+new Handle:sm_server = INVALID_HANDLE;
+new Handle:sm_port = INVALID_HANDLE;
 
 /* delcare plublic variable information */
 public Plugin:myinfo = {name = PLUGIN_NAME,author = AUTHOR,description = "",version = VERSION,url = URL};
@@ -49,7 +54,9 @@ public OnPluginStart(){
    }
 
    /* define convars */
-   sm_minClients = CreateConVar("sm_minClients","16","Minimum clients for ranking");
+   sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking");
+   sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script");
+   sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script");
 
    /* bind methods to game events */
    HookEvent("player_team",Event_pTeam);
@@ -231,6 +238,9 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
        VALUES('%s',%f,%f,%d,%d);", steam_id,blue/gameDuration, red/gameDuration,result,random);
       SQL_TQuery(db,T_query,query,i);
    }
+
+   /* use sockets to trigger rank calculations */
+   connectSocket();
 }
 
 
@@ -341,6 +351,35 @@ public Steam3To2(const String:in[], String:out[], maxlen)
         new m_unAccountID = StringToInt(in[5]);
         new m_unMod = m_unAccountID % 2;
         Format(out, maxlen, "STEAM_0:%d:%d", m_unMod, (m_unAccountID-m_unMod)/2);
+}
+
+/* socket functions for socket stuff */
+public connectSocket(){
+   if(SocketIsConnected(socket)){
+      OnSockCon(socket,1);
+      return;
+   }
+
+   socket = SocketCreate(SOCKET_TCP,OnSocketError);
+   decl String:sock_serv[100];
+   GetConVarString(sm_server,sock_serv,sizeof(sock_serv));
+   SocketConnect(socket,OnSockCon,OnSockRec,OnSockDis,sock_serv,GetConVarInt(sm_port));
+}
+
+public OnSocketError(Handle:sock, const errorType, const errorNum,any:hFile){
+   LogError("TrueSkill - Socket Error %d (errno %d)",errorType,errorNum);
+}
+public OnSockDis(Handle:sock,any:hFile){CloseHandle(sock);}
+public OnSockRec(Handle:sock,String:data[],const d,any:f){}
+public OnSockCon(Handle:sock,any:f){
+   if(gameNumber == 0){
+      return;
+   }
+   
+   decl String:gNum[10]; 
+   Format(gNum,sizeof(gNum),"%d",gameNumber);
+   SocketSend(sock,gNum);
+   gameNumber = 0;
 }
 
 
