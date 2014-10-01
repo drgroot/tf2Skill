@@ -217,6 +217,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
    new result = GetEventInt(event,"team");
    new random = GetRandomInt(0,400);
    new Float:gameDuration = float(GetTime() - game_start);
+   gameNumber = random;
 
    /* ensure that the game was not a farm fest */
    if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) 
