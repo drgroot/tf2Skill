@@ -99,9 +99,12 @@ def clientthread(con_client):
       if result == 3:
 	 [team_blu, team_red] = env.rate([tuple(team_blu), tuple(team_red)],
 	       weights=[tuple(time_blu), tuple(time_red) ] )
-      else:
+      elif result == 2:
 	 [team_red, team_blu] = env.rate([tuple(team_red), tuple(team_blu)],
 	       weights=[tuple(time_red),tuple(time_blu)])
+      else:
+	 [team_blu, team_red] = env.rate([tuple(team_blu), tuple(team_red)],
+	       weights=[tuple(time_blu), tuple(time_red)], drawn=True)
 
       # update information in the database
       updatePlayerInfo(team_red, steam_red)
