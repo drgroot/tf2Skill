@@ -52,5 +52,10 @@ screen
 python trueSkill.py
 ```
 
+##Website Interface
+There are no official website interfaces that I have designed for this ranking system (because it is a trivial task).
 
+However, because I understand that most people are lazy and don't want to make their own website interface, the code from playtf2.com website should be used as a reference. See this [repository](https://github.com/yusuf-a/hlstatsx) for examples.
+
+Feel free to use it as a reference or just rip the website and use it as your own
 
