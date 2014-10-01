@@ -20,7 +20,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.2"
+#define VERSION 	"2.3"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -253,7 +253,7 @@ public Action:playRank(client, args){
             and sigma, and rank (1- x etc)   */
    decl String:query[QUERY_SIZE];
    Format(query,sizeof(query),
-      "select count(*)+1 rank,my.sigma from players my left join players others \
+      "select count(*) rank,(my.rank)/(my.averageRank * 10) * 1200 from players my left join players others \
       on others.rank > my.rank where my.SteamID = '%s';", steamID);
 
    SQL_LockDatabase(db);
@@ -266,7 +266,7 @@ public Action:playRank(client, args){
    CloseHandle(hQuery);
 
       /* 3. display to user in chat box */
-   PrintToChat( client,"Rank #%d, with %.2f units of uncertainty",rank,sigma );		
+   PrintToChat( client,"Rank #%d with %.2f ELO",rank,sigma );		
 
    return Plugin_Handled;
 }
