@@ -1,6 +1,5 @@
 #TF2 Skill
 ###A TrueSkill implementation for Team Fortress 2
----
 
 TF2 Skill is an adaptation of Microsoft's TrueSkill ranking system into source games. This ideally should work with any source game, but has been optimized and designed for Team Fortress 2. 
 
