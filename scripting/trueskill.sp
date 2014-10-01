@@ -266,7 +266,7 @@ public Action:playRank(client, args){
    CloseHandle(hQuery);
 
       /* 3. display to user in chat box */
-   PrintToChat( client,"Rank #%d, with %.2f ELO",rank,sigma );		
+   PrintToChat( client,"Rank #%d with %.2f ELO",rank,sigma );		
 
    return Plugin_Handled;
 }
