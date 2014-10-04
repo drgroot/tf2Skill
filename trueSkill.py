@@ -121,10 +121,8 @@ def clientthread(con_client):
 #### MAIN ####
 ##############
 
-# kill if listening on port 
-os.system("fuser -k -n tcp %d" % int(sock_port))
-
 sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
 sock.bind( ('',int(sock_port)) )
 sock.listen(10)
 
