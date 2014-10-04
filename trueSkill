@@ -10,7 +10,7 @@
 # Description:	     Starts the TrueSkill Daemon
 ### END INIT INFO
 
-NAME="PlayTF2 Trade Bot"
+NAME="TrueSkill Daemon"
 USER="yusuf"
 SCREENREF="trueskill"
 BINARYPATH="/home/yusuf/tf2Skill/"
