@@ -240,7 +240,6 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
       SQL_TQuery(db,T_query,query,i);
    }
 
-   /* use sockets to trigger rank calculations */
    connectSocket();
 }
 
@@ -254,7 +253,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 */
 public Action:playRank(client, args){
    decl String:steamID[sID_size];
-   new rank = 0; new Float:sigma = 100.0;
+   
 
    /* steps */
       /* 1. get steamid from client */
@@ -267,21 +266,30 @@ public Action:playRank(client, args){
       "select count(*) rank,(my.rank)/(my.averageRank * 10) * 1200 from players my left join players others \
       on others.rank > my.rank where my.SteamID = '%s';", steamID);
 
-   SQL_LockDatabase(db);
-   new Handle:hQuery = SQL_Query(db,query);
-   printErr(hQuery);
-   while(SQL_FetchRow(hQuery)){
-      rank = SQL_FetchInt(hQuery,0); sigma = SQL_FetchFloat(hQuery,1);
-   }
-   SQL_UnlockDatabase(db);
-   CloseHandle(hQuery);
-
-      /* 3. display to user in chat box */
-   PrintToChat( client,"Rank #%d with %.2f ELO",rank,sigma );		
-
+   SQL_TQuery(db,rank_query,query,client);
+   
    return Plugin_Handled;
 }
 
+public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
+   new client = data;
+   new rank = 0; new Float:sigma = 100.0;
+
+   if(!IsClientInGame(client)){
+      return;
+   }
+   if(hndl == INVALID_HANDLE){
+      printTErr(hndl,error);
+   }
+   else{
+      while(SQL_FetchRow(hndl)){
+         rank = SQL_FetchInt(hndl,0); 
+         sigma = SQL_FetchFloat(hndl,1);
+      }
+
+      PrintToChat( client,"Rank #%d with %.0f ELO",rank,sigma );     
+   }
+}
 
 /* UTILITY COMMANDS */
 
@@ -324,15 +332,6 @@ updatePlayerTimes(client,bool:restart = true){
    SetArrayArray(players_times,client,player_time,sizeof(player_time));
 }
 
-/* prints an error for non threaded stuff */
-printErr(Handle:hndle){
-   decl String:error[QUERY_SIZE];
-   if(hndle == INVALID_HANDLE){
-      SQL_GetError(db,error,sizeof(error));
-      LogError("TrueSkill - Query Failed: %s",error);
-   }
-}
-
 /* prints an error given handle and error string */
 printTErr(Handle:hndle,const String:error[]){
    if(hndle == INVALID_HANDLE){
@@ -343,7 +342,7 @@ printTErr(Handle:hndle,const String:error[]){
 }
 
 /* typical threaded query prototype */
-public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
+public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){   
    printTErr(hndle, error );
 }
 
@@ -356,11 +355,6 @@ public Steam3To2(const String:in[], String:out[], maxlen)
 
 /* socket functions for socket stuff */
 public connectSocket(){
-   if(SocketIsConnected(socket)){
-      OnSockCon(socket,1);
-      return;
-   }
-
    socket = SocketCreate(SOCKET_TCP,OnSocketError);
    decl String:sock_serv[100];
    GetConVarString(sm_server,sock_serv,sizeof(sock_serv));
@@ -376,7 +370,7 @@ public OnSockCon(Handle:sock,any:f){
    if(gameNumber == 0){
       return;
    }
-   
+
    decl String:gNum[10]; 
    Format(gNum,sizeof(gNum),"%d",gameNumber);
    SocketSend(sock,gNum);
