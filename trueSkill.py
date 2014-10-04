@@ -86,14 +86,14 @@ def clientthread(con_client):
 	    time_blu.append(player_blu)
 	    steam_blu.append(steamID)
 	 elif(player_red > player_blu):
-	    time_red.append(env.create_rating(mu=mew,sigma=sigma))
+	    team_red.append(env.create_rating(mu=mew,sigma=sigma))
 	    time_red.append(player_red)
 	    steam_red.append(steamID)
       
       # ensure minimum people are playing
       if( len(team_red) + len(team_blu) ) < 16:
-	 print "\t\tGroup %d was filtered" % gameNumber
-	 continue
+		print "\t\tGroup %d was filtered" % gameNumber
+		continue
 
       # apply trueskill calculation
       if result == 3:
