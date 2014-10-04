@@ -84,7 +84,7 @@ def clientthread(con_client):
 	 if(player_red < player_blu):
 	    team_blu.append(env.create_rating(mu=mew,sigma=sigma))
 	    time_blu.append(player_blu)
-	    steam_blu.append(stemID)
+	    steam_blu.append(steamID)
 	 elif(player_red > player_blue):
 	    time_red.append(env.create_rating(mu=mew,sigma=sigma))
 	    time_red.append(player_red)
