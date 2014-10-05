@@ -58,10 +58,16 @@ def clientthread(con_client):
       gameNumber = con_client.recv(1024)
 
       if not gameNumber:
-	 break
+		break
+
       
       gameNumber = int(gameNumber)
       print "TrueSkill Calculate group: %d" % gameNumber
+
+      # open mysql connection
+      if not conn.open:
+      	conn = pymysql.connect(host=host,port=3306,
+			user=user,passwd=passwd,db=datb);
       
       # start true skill stuff
       team_blu = []; team_red = []; steam_blu = [];
