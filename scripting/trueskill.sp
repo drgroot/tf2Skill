@@ -288,13 +288,6 @@ public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
 	}
 }
 
-public Steam3To2(const String:in[], String:out[], maxlen)
-{
-		  new m_unAccountID = StringToInt(in[5]);
-		  new m_unMod = m_unAccountID % 2;
-		  Format(out, maxlen, "STEAM_0:%d:%d", m_unMod, (m_unAccountID-m_unMod)/2);
-}
-
 /* socket functions for socket stuff */
 public connectSocket(){
 	socket = SocketCreate(SOCKET_TCP,OnSocketError);
