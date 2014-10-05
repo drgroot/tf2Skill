@@ -200,10 +200,8 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		/* insert data into database */
 		Format(query,sizeof(query),"INSERT INTO `temp` (steamid,time_blue,time_red,result,random) \
 		 VALUES('%s',%f,%f,%d,%d);", steam_id,blue/gameDuration, red/gameDuration,result,random);
-		SQL_TQuery(db,T_query,query,i);
+		SQL_TQuery(db,T_query,query,i == GetArraySize(players) - 1);
 	}
-
-	connectSocket();
 }
 
 
@@ -282,8 +280,12 @@ printTErr(Handle:hndle,const String:error[]){
 }
 
 /* typical threaded query prototype */
-public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){   
+public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
 	printTErr(hndle, error );
+
+	if(data == 1){
+		connectSocket();
+	}
 }
 
 public Steam3To2(const String:in[], String:out[], maxlen)
