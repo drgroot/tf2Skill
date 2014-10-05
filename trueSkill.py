@@ -65,9 +65,8 @@ def clientthread(con_client):
       print "TrueSkill Calculate group: %d" % gameNumber
 
       # open mysql connection
-      if not conn.open:
-      	conn = pymysql.connect(host=host,port=3306,
-			user=user,passwd=passwd,db=datb);
+      conn = pymysql.connect(host=host,port=3306,
+		user=user,passwd=passwd,db=datb);
       
       # start true skill stuff
       team_blu = []; team_red = []; steam_blu = [];
@@ -120,7 +119,9 @@ def clientthread(con_client):
       cur_del = conn.cursor()
       cur_del.execute("DELETE FROM temp WHERE random = %d" % gameNumber)
       conn.commit(); cur_del.close();
+      
       cur.close();
+      conn.close()
 
    con_client.close()
 
@@ -142,6 +143,5 @@ while 1:
    start_new_thread(clientthread,(con,))
 
 sock.close()
-conn.close()
 
 exit()
