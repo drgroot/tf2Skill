@@ -55,7 +55,7 @@ public OnPluginStart(){
 	}
 
 	/* define convars */
-	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking");
+	sm_minClients = CreateConVar("sm_trueskill_minClients","0","Minimum clients to track ranking");
 	sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script");
 	sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script");
 
@@ -125,11 +125,11 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		if(player == -1){
 		  PushArrayString(players,steamID);
 		  player = FindStringInArray(players,steamID);
-		  PushArrayArray(players_times,{0,0});
+		  PushArrayArray(players_times,{0.0,0.0});
 		}
 
 		/* create timer */
-		CreateTimer(INTERVAL,UpdateTimes,player);
+		CreateTimer(INTERVAL,UpdateTimes,player,TIMER_REPEAT);
 	}
 }
 
@@ -152,10 +152,10 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 			steam_id = getSteamID(i);
 
 			PushArrayString(players,steam_id);
-			PushArrayArray(players_times,{0,0});
+			PushArrayArray(players_times,{0.0,0.0});
 
 			/* create timer */
-			CreateTimer(INTERVAL, UpdateTimes,i);
+			CreateTimer(INTERVAL, UpdateTimes,i,TIMER_REPEAT);
 		}
 	}
 
@@ -175,7 +175,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	/* declare useful buffers */
 	decl String:steam_id[sID_size];
 	new String:query[QUERY_SIZE];
-	decl player_time[2];
+	decl Float:player_time[2];
 
 	track_game = 0;
 
@@ -194,13 +194,13 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
 		GetArrayString(players,i,steam_id,sizeof(steam_id));
 
-		new Float:blue = float(player_time[1]);
-		new Float:red = float(player_time[0]);
+		new Float:blue = player_time[1];
+		new Float:red = player_time[0];
 	
 		/* insert data into database */
 		Format(query,sizeof(query),"INSERT INTO `temp` (steamid,time_blue,time_red,result,random) \
 		 VALUES('%s',%f,%f,%d,%d);", steam_id,blue/gameDuration, red/gameDuration,result,random);
-		SQL_TQuery(db,T_query,query,i == GetArraySize(players) - 1);
+		SQL_TQuery(db,T_query,query,i == (GetArraySize(players) - 1));
 	}
 }
 
@@ -250,11 +250,28 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 
 public Action:UpdateTimes(Handle:timer,any:client){
 	/* ensure tracking game */
-	if(!track_game)
-		return 
+	if(!track_game || !IsClientInGame(client))
+		return Plugin_Stop;
 
-	/* ensure client connected */
+	/* get player id in array */
+	new player = getPlayerID(client);
 
+	/* get the required data array information */
+	decl Float:player_time[2];
+	GetArrayArray(players_times,player,player_time,sizeof(player_time)); 
+
+	/* determine which team counter to increment */
+	switch (GetClientTeam(client)){
+		case (_:TFTeam_Red): {
+			player_time[0] = player_time[0] + INTERVAL;
+		}
+
+		case (_:TFTeam_Blue): {
+			player_time[1] = player_time[1] + INTERVAL;
+		}
+	}
+
+	return Plugin_Continue;
 }
 
 /* Return playerID given client index */
