@@ -66,6 +66,7 @@ public OnPluginStart(){
 	HookEvent("teamplay_round_start", Event_rStart);
 	HookEvent("teamplay_round_win",Event_rEnd);
 	HookEvent("player_disconnect", Event_pDisconnect);
+	HookEvent("player_death", Event_pDeath);
 	RegConsoleCmd("sm_rank",playRank);
     
 	players_stats = CreateArray(20,0);
@@ -82,6 +83,39 @@ public OnLibraryAdded(const String:name[]){
 
 
 /* METHODS FOR GAME EVENTS */
+
+public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
+	/* ensure not a fake death */
+	if( GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
+		return;
+	
+	/* ensure killed by another player */
+	if( GetEventInt(event, "attacker") <= 0 || GetEventInt(event,"attacker") > MaxClients)
+		return;
+	decl atker[20]; decl victm[20];
+
+	/* get client index */
+	new killer = GetClientOfUserId( GetEventInt(event, "attacker") );
+	new victim = GetClientOfUserId( GetEventInt(event, "userid") );
+
+	/* get client roles */
+	new TFClassType:killer_role = TF2_GetPlayerClass( killer );
+	new TFClassType:victim_role = TF2_GetPlayerClass( victim );
+
+	/* get adt_array index and old stats */
+	killer = getPlayerID(killer); victim = getPlayerID(victim);
+	GetArrayArray( players_stats, killer, atker, sizeof(atker) );
+	GetArrayArray( players_stats, victim, victm, sizeof(victm) );
+
+	/* increment data */
+	atker[killer_role]++;
+	victm[victim_role + 10]++;
+
+	/* store into <adt_array> player_stats */
+	SetArrayArray( players_stats, killer, atker, sizeof(atker) );
+	SetArrayArray( players_stats, victim, victm, sizeof(victm) );
+}
+
 /*
 	- keep track of clients disconnecting
 	- update client playing time
