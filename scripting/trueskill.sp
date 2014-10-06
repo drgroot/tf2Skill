@@ -25,6 +25,7 @@ requires:
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
+#define NAME_SIZE	100
 #define INTERVAL	0.15
 
 new Handle:db;
@@ -106,6 +107,10 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	decl String:steamID[sID_size]; steamID = getSteamID( client );
 	new player = getPlayerID( client );
 
+	/* get player name */
+	decl String:playerName[NAME_SIZE];
+	GetClientName(client, playerName, sizeof(playerName));
+
 	/* ensure we are tracking data */
 	if(!track_game)
 		return;
@@ -120,6 +125,13 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		"insert into players (steamID) values ('%s') on duplicate key update lastConnect = CURRENT_TIMESTAMP;",
 			steamID);
 		SQL_TQuery(db,T_query,query,client);
+
+		Format(query,sizeof(query),
+		"UPDATE players SET name = '%s' WHERE steamID = '%s';",
+			playerName, steamID);
+		SQL_TQuery(db,T_query,query,client);
+
+		/* update player name */
 
 		/* otherwise populate the arrays */
 		if(player == -1){
