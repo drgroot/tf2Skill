@@ -126,12 +126,12 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		Format(query,sizeof(query),
 		"insert into players (steamID) values ('%s') on duplicate key update lastConnect = CURRENT_TIMESTAMP;",
 			steamID);
-		SQL_TQuery(db,T_query,query,client);
+		SQL_TQuery(db,T_query,query,0);
 
 		Format(query,sizeof(query),
 		"UPDATE players SET name = '%s' WHERE steamID = '%s';",
 			playerName, steamID);
-		SQL_TQuery(db,T_query,query,client);
+		SQL_TQuery(db,T_query,query,0);
 
 		/* update player name */
 
@@ -194,6 +194,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	decl String:steam_id[sID_size];
 	new String:query[QUERY_SIZE];
 	decl Float:player_time[2];
+	decl player_stat[20];
 
 	track_game = 0;
 
@@ -209,6 +210,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 
 	for(new i=0;i<GetArraySize(players);i++){
 		/* store player data into buffers */
+		GetArrayArray( players_stats,i,player_stat,sizeof(player_stat) );
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
 		GetArrayString(players,i,steam_id,sizeof(steam_id));
 
@@ -219,6 +221,23 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		Format(query,sizeof(query),"INSERT INTO `temp` (steamid,time_blue,time_red,result,random) \
 		 VALUES('%s',%f,%f,%d,%d);", steam_id,blue/gameDuration, red/gameDuration,result,random);
 		SQL_TQuery(db,T_query,query,i == (GetArraySize(players) - 1));
+
+		/* loop through role stats and store into mysql */
+		for(new j=0; j<10; j++){
+			new role = j;
+			new kills = player_stat[j];
+			new deths = player_stat[j+10];
+
+			if(kills == 0 && deths == 0)
+				continue;
+			
+			/* build query and insert into database */
+			Format(query, sizeof(query), 
+				"INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES ('%s:%d','%s',%d,%d,%d) \
+				ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d;",
+				steam_id,role,steam_id,role,kills,deths,kills,deths);
+			SQL_TQuery(db,T_query,query,0);
+		}
 	}
 }
 
