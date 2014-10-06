@@ -90,7 +90,7 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 		return;
 	
 	/* ensure killed by another player */
-	if( GetEventInt(event, "attacker") <= 0 || GetEventInt(event,"attacker") > MaxClients)
+	if( GetEventInt(event, "attacker") <= 0 || GetEventInt(event,"attacker") >= MaxClients)
 		return;
 	decl atker[20]; decl victm[20];
 
