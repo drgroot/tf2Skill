@@ -21,7 +21,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.6"
+#define VERSION 	"2.7"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -141,7 +141,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		}
 
 		/* create timer */
-		CreateTimer(INTERVAL,UpdateTimes,player,TIMER_REPEAT);
+		CreateTimer(INTERVAL,UpdateTimes,client,TIMER_REPEAT);
 	}
 }
 
