@@ -29,6 +29,7 @@ requires:
 #define INTERVAL	0.15
 
 new Handle:db;
+new Handle:players_stats;
 new Handle:players_times;
 new Handle:players;
 new Handle:socket;
@@ -66,7 +67,8 @@ public OnPluginStart(){
 	HookEvent("teamplay_round_win",Event_rEnd);
 	HookEvent("player_disconnect", Event_pDisconnect);
 	RegConsoleCmd("sm_rank",playRank);
-
+    
+	players_stats = CreateArray(20,0);
 	players_times = CreateArray(2,0);
 	players = CreateArray(sID_size,0);
 }
@@ -138,6 +140,8 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		  PushArrayString(players,steamID);
 		  player = FindStringInArray(players,steamID);
 		  PushArrayArray(players_times,{0.0,0.0});
+		  PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
+		  								0,0,0,0,0,0,0,0,0,0});
 		}
 
 		/* create timer */
@@ -165,6 +169,8 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 
 			PushArrayString(players,steam_id);
 			PushArrayArray(players_times,{0.0,0.0});
+			PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0});
 
 			/* create timer */
 			CreateTimer(INTERVAL, UpdateTimes,i,TIMER_REPEAT);
