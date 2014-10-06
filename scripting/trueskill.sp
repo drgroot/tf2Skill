@@ -300,6 +300,7 @@ public Action:playRank(client, args){
 public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 	new client = data;
 	new rank = 0; new Float:sigma = 100.0;
+	decl String:name[NAME_SIZE];
 
 	if(!IsClientInGame(client)){
 		return;
@@ -313,7 +314,13 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 			sigma = SQL_FetchFloat(hndl,1);
 		}
 
-		PrintToChat( client,"Rank #%d with %.0f Elo",rank,sigma );     
+		if(rank <= 50){
+			GetClientName(client,name,sizeof(name));
+			PrintToChatAll( "Player: \x08%s \x01Rank: \x08%d \x01with \x08%.0f \x01Elo",name,rank,sigma);
+		}
+		else{
+			PrintToChat( client,"Rank #%d with %.0f Elo",rank,sigma );
+		}
 	}
 }
 
