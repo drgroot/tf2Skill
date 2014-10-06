@@ -85,6 +85,10 @@ public OnLibraryAdded(const String:name[]){
 /* METHODS FOR GAME EVENTS */
 
 public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
+	/* only if tracking game */
+	if(!track_game)
+		return
+
 	/* ensure not a fake death */
 	if( GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
 		return;
