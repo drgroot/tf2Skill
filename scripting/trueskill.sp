@@ -21,11 +21,11 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.4"
+#define VERSION 	"2.5"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
-#define INTERVAL	2.0
+#define INTERVAL	0.15
 
 new Handle:db;
 new Handle:players_times;
@@ -55,7 +55,7 @@ public OnPluginStart(){
 	}
 
 	/* define convars */
-	sm_minClients = CreateConVar("sm_trueskill_minClients","0","Minimum clients to track ranking");
+	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking");
 	sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script");
 	sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script");
 
@@ -270,6 +270,8 @@ public Action:UpdateTimes(Handle:timer,any:client){
 			player_time[1] = player_time[1] + INTERVAL;
 		}
 	}
+	/* store array back into adt */
+	SetArrayArray(players_times,player,player_time,sizeof(player_time));
 
 	return Plugin_Continue;
 }
