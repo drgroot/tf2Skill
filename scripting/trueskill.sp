@@ -21,7 +21,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.5"
+#define VERSION 	"2.6"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -262,7 +262,7 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 
 public Action:UpdateTimes(Handle:timer,any:client){
 	/* ensure tracking game */
-	if(!track_game || !IsClientInGame(client))
+	if(!track_game || !IsClientConnected(client))
 		return Plugin_Stop;
 
 	/* get player id in array */
