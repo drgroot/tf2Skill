@@ -87,20 +87,21 @@ public OnLibraryAdded(const String:name[]){
 public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 	/* only if tracking game */
 	if(!track_game)
-		return
+		return;
 
 	/* ensure not a fake death */
 	if( GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
 		return;
 	
-	/* ensure killed by another player */
-	if( GetEventInt(event, "attacker") <= 0 || GetEventInt(event,"attacker") >= MaxClients)
-		return;
 	decl atker[20]; decl victm[20];
 
 	/* get client index */
 	new killer = GetClientOfUserId( GetEventInt(event, "attacker") );
 	new victim = GetClientOfUserId( GetEventInt(event, "userid") );
+
+	/* ensure not suicide */
+	if(killer == victim)
+		return;
 
 	/* get client roles */
 	new TFClassType:killer_role = TF2_GetPlayerClass( killer );
@@ -195,7 +196,8 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	/* restart required variables */
 	game_start = GetTime(); client_count = 0;
-	ClearArray(players); ClearArray(players_times); 
+	ClearArray(players); ClearArray(players_times);
+	ClearArray(players_stats); 
 
 	decl String:steam_id[sID_size];
 
