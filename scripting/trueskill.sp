@@ -42,6 +42,7 @@ new gameNumber = 0;
 new Handle:sm_minClients = INVALID_HANDLE;
 new Handle:sm_server = INVALID_HANDLE;
 new Handle:sm_port = INVALID_HANDLE;
+new Handle:sm_minGlobal = INVALID_HANDLE;
 
 /* delcare plublic variable information */
 public Plugin:myinfo = {name = PLUGIN_NAME,author = AUTHOR,description = "",version = VERSION,url = URL};
@@ -57,9 +58,11 @@ public OnPluginStart(){
 	}
 
 	/* define convars */
+	CreateConVar("sm_trueskill_version",VERSION,"public CVar shows the plugin version");
 	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking");
 	sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script");
 	sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script");
+	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off");
 
 	/* bind methods to game events */
 	HookEvent("player_team",Event_pTeam);
@@ -324,7 +327,7 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 			sigma = SQL_FetchFloat(hndl,1);
 		}
 
-		if(rank <= 50){
+		if(rank <= GetConVarInt(sm_minGlobal) && rank > 0 ){
 			GetClientName(client,name,sizeof(name));
 			CPrintToChatAll("Player: {green}%s {normal}Rank: {green}%d {normal}with {green}%.0f {normal}Elo",
 				name,rank,sigma);
