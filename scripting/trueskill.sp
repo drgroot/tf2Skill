@@ -17,6 +17,7 @@ requires:
 #include <tf2_stocks>
 #include <updater>
 #include <socket>
+#include <morecolors>
 
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
@@ -326,7 +327,8 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 
 		if(rank <= 50){
 			GetClientName(client,name,sizeof(name));
-			PrintToChatAll( "Player: \x08%s \x01Rank: \x08%d \x01with \x08%.0f \x01Elo",name,rank,sigma);
+			CPrintToChatAll("Player: {green}%s {normal}Rank: {green}%d {normal}with {green}%.0f {normal}Elo",
+				name,rank,sigma);
 		}
 		else{
 			PrintToChat( client,"Rank #%d with %.0f Elo",rank,sigma );
