@@ -104,7 +104,7 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 		return;
 
 	/* ensure client index is valid */
-	if(killer*victim <= 0)
+	if(killer*victim <= 0 || killer > MaxClients || victim > MaxClients)
 		return;
 
 	/* get client roles */
