@@ -17,6 +17,7 @@ user = config.get('database','user')
 passwd = config.get('database','passwd')
 datb = config.get('database','db')
 sock_port = config.get('database','socket_port')
+min_clients = int(config.get('database','min_clients'))
 
 # connect to mysql database
 conn = pymysql.connect(host=host,port=3306,
@@ -96,7 +97,7 @@ def clientthread(con_client):
 	    steam_red.append(steamID)
       
       # ensure minimum people are playing
-      if( len(team_red) + len(team_blu) ) < 16:
+      if( len(team_red) + len(team_blu) ) < min_clients:
 		print "\t\tGroup %d was filtered" % gameNumber
 		continue
 
@@ -109,7 +110,7 @@ def clientthread(con_client):
 	       weights=[tuple(time_red),tuple(time_blu)])
       else:
 	 [team_blu, team_red] = env.rate([tuple(team_blu), tuple(team_red)],
-	       weights=[tuple(time_blu), tuple(time_red)], drawn=True)
+	       weights=[tuple(time_blu), tuple(time_red)], ranks=[0,0])
 
       # update information in the database
       updatePlayerInfo(team_red, steam_red)
