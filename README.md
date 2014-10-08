@@ -13,9 +13,7 @@ TF2 Skill is an adaptation of [Microsoft's TrueSkill][5] ranking system into sou
 
 ##Features
 * **Non-point based** - Functions as an ELO derived match making system.
-* **Lightweight** - Little overhead and very compact and optimal coding.
 * **Threaded** - Support for simultaneous servers all using the same listener.
-* **Logging** - The plugin maintains full logs of all errors, warnings and information.
 * **AutoUpdate** - The plugin will automatically update itself when updates are available. You will always have the most up-to-date version of the plugin.
 
 ##CVar/Command List
@@ -25,6 +23,7 @@ sm_trueskill_version // public CVar shows the plugin version
 sm_trueskill_minClients 16    //minimum number of clients required to track ranking
 sm_trueskill_server "dev.yusufali.ca" //ip or hostname of server running python script
 sm_trueskill_port "5000" //socket port to interact with the python daemon
+sm_trueskill_global "50" //minimum rank to display globally to the server, 0 for off
 ```
 
 ##Installation
@@ -81,6 +80,7 @@ Feel free to use it as a reference or just rip the website and use it as your ow
 * [ChangeLog][7]
 * [Previous Releases][8]
 * SourceCode: [GitHub][9] or [My Website][10]
+* [Development Progress][11]
 
 
 [1]: http://trueskill.org/
@@ -93,3 +93,4 @@ Feel free to use it as a reference or just rip the website and use it as your ow
 [8]: https://github.com/yusuf-a/tf2Skill/releases
 [9]: https://github.com/yusuf-a/tf2Skill
 [10]: http://yusufali.ca/repos/tf2Skill.git/
+[11]: https://github.com/yusuf-a/tf2Skill/network
