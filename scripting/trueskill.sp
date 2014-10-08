@@ -26,7 +26,6 @@ requires:
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
-#define NAME_SIZE	100
 #define INTERVAL	0.15
 
 new Handle:db;
@@ -154,7 +153,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	new player = getPlayerID( client );
 
 	/* get player name */
-	decl String:playerName[NAME_SIZE];
+	decl String:playerName[MAX_NAME_LENGTH *2 +1];
 	GetClientName(client, playerName, sizeof(playerName));
 	SQL_EscapeString(db,playerName,playerName,sizeof(playerName));
 
@@ -311,7 +310,7 @@ public Action:playRank(client, args){
 public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 	new client = data;
 	new rank = 0; new Float:sigma = 100.0;
-	decl String:name[NAME_SIZE];
+	decl String:name[MAX_NAME_LENGTH];
 
 	if(!IsClientInGame(client)){
 		return;
