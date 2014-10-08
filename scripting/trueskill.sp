@@ -21,7 +21,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.9"
+#define VERSION 	"2.10"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -103,6 +103,10 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 	if(killer == victim)
 		return;
 
+	/* ensure client index is valid */
+	if(killer*victim <= 0)
+		return;
+
 	/* get client roles */
 	new TFClassType:killer_role = TF2_GetPlayerClass( killer );
 	new TFClassType:victim_role = TF2_GetPlayerClass( victim );
@@ -168,12 +172,11 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 			steamID);
 		SQL_TQuery(db,T_query,query,0);
 
+		/* update player name */
 		Format(query,sizeof(query),
 		"UPDATE players SET name = '%s' WHERE steamID = '%s';",
 			playerName, steamID);
 		SQL_TQuery(db,T_query,query,0);
-
-		/* update player name */
 
 		/* otherwise populate the arrays */
 		if(player == -1){
@@ -329,6 +332,9 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 public Action:UpdateTimes(Handle:timer,any:client){
 	/* ensure tracking game */
 	if(!track_game || !IsClientConnected(client))
+		return Plugin_Stop;
+
+	if(!IsClientInGame(client))
 		return Plugin_Stop;
 
 	/* get player id in array */
