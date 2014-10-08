@@ -1,16 +1,16 @@
 #TF2 Skill
 ###A TrueSkill implementation for Team Fortress 2
 
-TF2 Skill is an adaptation of Microsoft's TrueSkill ranking system into source games. This ideally should work with any source game, but has been optimized and designed for Team Fortress 2. 
+TF2 Skill is an adaptation of Microsoft's TrueSkill ranking system into source games. This plugin has only been tested and designed to work with Team Fortress 2. 
 
 ##Requirements
 * Working Source-based Game Server with SourceMod installed
-* SourceSockets Extension
-* Sourcemod Updater Plugin
+* [SourceSockets Extension][3]
+* [Sourcemod Updater Plugin][4]
 * MySQL database
 * Python >= 2.7
-   * TrueSkill module
-   * PyMySQL or MySQLDB module
+   * [TrueSkill][1]  module
+   * [PyMySQL][2] module
 
 ##Features
 * **Non-point based** - Functions as an ELO derived match making system.
@@ -59,3 +59,8 @@ However, because I understand that most people are lazy and don't want to make t
 
 Feel free to use it as a reference or just rip the website and use it as your own
 
+
+[1]: http://trueskill.org/
+[2]: https://pypi.python.org/pypi/PyMySQL
+[3]: https://forums.alliedmods.net/showthread.php?t=67640
+[4]: https://forums.alliedmods.net/showthread.php?t=169095
