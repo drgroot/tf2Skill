@@ -333,7 +333,7 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 				name,rank,sigma);
 		}
 		else{
-			PrintToChat( client,"Rank #%d with %.0f Elo",rank,sigma );
+			CPrintToChat(client, "Rank {green}#%d {normal} with {red}%.0f {normal}Elo", rank,sigma);
 		}
 	}
 }
