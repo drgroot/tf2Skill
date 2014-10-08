@@ -42,7 +42,7 @@ Download the .smx file and save to the plugins directory into your sourcemod plu
 
 Similarly, on the server running the python daemon, edit `config.file.sample` and then rename it to `config.file`
 
-##Running The Daemon
+##Running The Daemon (Linux)
 To begin applying TrueSkill calculations, simply run the python script in a screen session or using an init script. Below is a sample to start the daemon
 
 ```bash
@@ -59,12 +59,23 @@ update-rc.d /etc/init.d/trueSkill defaults  # add to startup parameters
 /etc/init.d/trueSkill status # ensure its running
 ```
 
-Sometimes, the daemon may break and shutdown. A non-daemonized script has also been provided to run to calculate rankings for events that were not accounted for.
+Rarely, the daemon may shutdown on its own. A non-daemonized script has also been provided to run to calculate rankings for events that were not accounted for.
 
 ```bash
 python trueSkill_noDaemon.py
 ```
 **To have OCD about it runing** run this script daily (using a crontab or something) to ensure it runs daily. This is overkill, and I highly recommend against this practice. 
+
+##Running the Daemon (Windows)
+Windows users can run the daemon as they normally will run any python script
+
+```
+dir C:\path\to\daemon\files\
+python trueSkill.py  
+//or trueskill_noDaemon.py if u want to run that (read linux notes on what its for)
+```
+
+For those very rare occasions where the daemon shutsdown, you can add it as a windows service
 
 ##Website Interface
 Example Website Interface: [PlayTF2][6]
