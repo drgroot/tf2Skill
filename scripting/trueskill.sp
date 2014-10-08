@@ -21,7 +21,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.6"
+#define VERSION 	"2.10"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -85,18 +85,27 @@ public OnLibraryAdded(const String:name[]){
 /* METHODS FOR GAME EVENTS */
 
 public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
+	/* only if tracking game */
+	if(!track_game)
+		return;
+
 	/* ensure not a fake death */
 	if( GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
 		return;
 	
-	/* ensure killed by another player */
-	if( GetEventInt(event, "attacker") <= 0 || GetEventInt(event,"attacker") > MaxClients)
-		return;
 	decl atker[20]; decl victm[20];
 
 	/* get client index */
 	new killer = GetClientOfUserId( GetEventInt(event, "attacker") );
 	new victim = GetClientOfUserId( GetEventInt(event, "userid") );
+
+	/* ensure not suicide */
+	if(killer == victim)
+		return;
+
+	/* ensure client index is valid */
+	if(killer*victim <= 0)
+		return;
 
 	/* get client roles */
 	new TFClassType:killer_role = TF2_GetPlayerClass( killer );
@@ -146,6 +155,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	/* get player name */
 	decl String:playerName[NAME_SIZE];
 	GetClientName(client, playerName, sizeof(playerName));
+	SQL_EscapeString(db,playerName,playerName,sizeof(playerName));
 
 	/* ensure we are tracking data */
 	if(!track_game)
@@ -162,12 +172,11 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 			steamID);
 		SQL_TQuery(db,T_query,query,0);
 
+		/* update player name */
 		Format(query,sizeof(query),
 		"UPDATE players SET name = '%s' WHERE steamID = '%s';",
 			playerName, steamID);
 		SQL_TQuery(db,T_query,query,0);
-
-		/* update player name */
 
 		/* otherwise populate the arrays */
 		if(player == -1){
@@ -179,7 +188,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		}
 
 		/* create timer */
-		CreateTimer(INTERVAL,UpdateTimes,player,TIMER_REPEAT);
+		CreateTimer(INTERVAL,UpdateTimes,client,TIMER_REPEAT);
 	}
 }
 
@@ -190,7 +199,8 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	/* restart required variables */
 	game_start = GetTime(); client_count = 0;
-	ClearArray(players); ClearArray(players_times); 
+	ClearArray(players); ClearArray(players_times);
+	ClearArray(players_stats); 
 
 	decl String:steam_id[sID_size];
 
@@ -329,6 +339,9 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 public Action:UpdateTimes(Handle:timer,any:client){
 	/* ensure tracking game */
 	if(!track_game || !IsClientConnected(client))
+		return Plugin_Stop;
+
+	if(!IsClientInGame(client))
 		return Plugin_Stop;
 
 	/* get player id in array */
