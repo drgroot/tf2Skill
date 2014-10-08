@@ -40,7 +40,9 @@ Download the .smx file and save to the plugins directory into your sourcemod plu
    }
 ```
 
-Similarly, on the server running the python daemon, edit `config.file.sample` and then rename it to `config.file`
+**Daemon**: Similarly, on the server running the python daemon, edit `config.file.sample` and then rename it to `config.file`
+
+**Database**: import `trueSkill.sql` into your MySQL database
 
 ##Running The Daemon
 To begin applying TrueSkill calculations, simply run the python script in a screen session or using an init script. Below is a sample to start the daemon
