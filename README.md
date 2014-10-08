@@ -82,6 +82,10 @@ Feel free to use it as a reference or just rip the website and use it as your ow
 * SourceCode: [GitHub][9] or [My Website][10]
 * [Development Progress][11]
 
+##Issues / Bugs
+
+All issues/bugs please [report here](https://github.com/yusuf-a/tf2Skill/issues)
+
 
 [1]: http://trueskill.org/
 [2]: https://pypi.python.org/pypi/PyMySQL
