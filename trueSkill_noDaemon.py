@@ -109,6 +109,7 @@ for randoms in cur:
 	# drop data from temp table
 	cur_del = conn.cursor();
 	cur_del.execute("DELETE FROM temp WHERE random = %d" % random);
+	cur_del.execute("update players a, (SELECT AVG( DISTINCT(  rank  )  )  agv from players) v set a.`averageRank` = v.agv;")
 	conn.commit(); cur_del.close();
 
 cur2.close();

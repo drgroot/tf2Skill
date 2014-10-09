@@ -119,6 +119,7 @@ def clientthread(con_client):
       # drop data from temp table
       cur_del = conn.cursor()
       cur_del.execute("DELETE FROM temp WHERE random = %d" % gameNumber)
+      cur_del.execute("update players a, (SELECT AVG( DISTINCT(  rank  )  )  agv from players) v set a.`averageRank` = v.agv;");
       conn.commit(); cur_del.close();
       
       cur.close();
