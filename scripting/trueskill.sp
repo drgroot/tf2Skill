@@ -22,7 +22,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.11"
+#define VERSION 	"2.12"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -165,10 +165,6 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	GetClientName(client, playerName, sizeof(playerName));
 	SQL_EscapeString(db,playerName,playerName,sizeof(playerName));
 
-	/* ensure we are tracking data */
-	if(!track_game)
-		return;
-
 	/* determine if player switched teams or joined */
 	if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
 		client_count++;
@@ -176,15 +172,14 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		/* add to database, and update last connect */
 		decl String:query[QUERY_SIZE];
 		Format(query,sizeof(query),
-		"insert into players (steamID) values ('%s') on duplicate key update lastConnect = CURRENT_TIMESTAMP;",
-			steamID);
+		"insert into players (steamID,name) values ('%s','%s') on duplicate key \
+		update lastConnect = CURRENT_TIMESTAMP AND name = '%s';",
+			steamID,playerName,playerName);
 		SQL_TQuery(db,T_query,query,0);
 
-		/* update player name */
-		Format(query,sizeof(query),
-		"UPDATE players SET name = '%s' WHERE steamID = '%s';",
-			playerName, steamID);
-		SQL_TQuery(db,T_query,query,0);
+		/* ensure we are tracking data */
+		if(!track_game)
+			return;
 
 		/* otherwise populate the arrays */
 		if(player == -1){
