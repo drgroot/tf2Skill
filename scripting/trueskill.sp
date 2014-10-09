@@ -84,12 +84,6 @@ public OnLibraryAdded(const String:name[]){
 	 }
 }
 
-/* reload plugin on update */
-public Updater_OnPluginUpdater(){
-	ReloadPlugin();
-}
-
-
 /* METHODS FOR GAME EVENTS */
 
 public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
