@@ -20,13 +20,11 @@ sock_port = config.get('database','socket_port')
 min_clients = int(config.get('database','min_clients'))
 
 # connect to mysql database
-conn = pymysql.connect(host=host,port=3306,
-	user=user,passwd=passwd,db=datb);
 env = skill.TrueSkill();
 
 # loads old player information
 # return mu, sigma
-def getPlayerSkill(steamID):
+def getPlayerSkill(steamID,conn):
 	cur_gP = conn.cursor(); 
 	cur_gP.execute("SELECT mew,sigma FROM players WHERE steamID = '%s'" % steamID);
 	
@@ -38,7 +36,7 @@ def getPlayerSkill(steamID):
 	conn.commit();cur_gP.close()
 	return getPlayerSkill(steamID)
 
-def updatePlayerInfo(team_ls,steam_ls):
+def updatePlayerInfo(team_ls,steam_ls,conn):
 	cur_uP = conn.cursor();
 
 	i = 0;
@@ -54,78 +52,77 @@ rank=%(rank)f WHERE steamID='%(steam)s'" % data)
 # Function for handling connections 
 # used to work for multiple server connections
 def clientthread(con_client):
-   while True:
-      # recieve data from client
-      gameNumber = con_client.recv(1024)
+	while True:
+		# recieve data from client
+		gameNumber = con_client.recv(1024)
 
-      if not gameNumber:
+		if not gameNumber:
 		break
 
-      
-      gameNumber = int(gameNumber)
-      print "TrueSkill Calculate group: %d" % gameNumber
+		gameNumber = int(gameNumber)
+		print "TrueSkill Calculate group: %d" % gameNumber
 
-      # open mysql connection
-      conn = pymysql.connect(host=host,port=3306,
+		# open mysql connection
+		conn = pymysql.connect(host=host,port=3306,
 		user=user,passwd=passwd,db=datb);
-      
-      # start true skill stuff
-      team_blu = []; team_red = []; steam_blu = [];
-      time_blu = []; time_red = []; steam_red = [];
-      result = 0
-      cur = conn.cursor();
+		
+		# start true skill stuff
+		team_blu = []; team_red = []; steam_blu = [];
+		time_blu = []; time_red = []; steam_red = [];
+		result = 0
+		cur = conn.cursor();
 
-      # load stuff from temp table
-      cur.execute("SELECT * from temp WHERE random = %d" % gameNumber)
+		# load stuff from temp table
+		cur.execute("SELECT * from temp WHERE random = %d" % gameNumber)
 
-      for player in cur:
-	 steamID = player[0]; player_blu = float(player[1]);
-	 player_red = float(player[2]); result = int(player[3]);
+		for player in cur:
+			steamID = player[0]; player_blu = float(player[1]);
+			player_red = float(player[2]); result = int(player[3]);
 	 
-	 # load old player information
-	 mew, sigma = getPlayerSkill(steamID)
+	 		# load old player information
+			mew, sigma = getPlayerSkill(steamID, conn)
 
-	 # append player to correct team
-	 # based on time
-	 if(player_red < player_blu):
-	    team_blu.append(env.create_rating(mu=mew,sigma=sigma))
-	    time_blu.append(player_blu)
-	    steam_blu.append(steamID)
-	 elif(player_red > player_blu):
-	    team_red.append(env.create_rating(mu=mew,sigma=sigma))
-	    time_red.append(player_red)
-	    steam_red.append(steamID)
-      
-      # ensure minimum people are playing
-      if( len(team_red) + len(team_blu) ) < min_clients:
-		print "\t\tGroup %d was filtered" % gameNumber
-		continue
+	 		# append player to correct team
+	 		# based on time
+	 		if(player_red < player_blu):
+				team_blu.append(env.create_rating(mu=mew,sigma=sigma))
+				time_blu.append(player_blu)
+				steam_blu.append(steamID)
+			elif(player_red > player_blu):
+				team_red.append(env.create_rating(mu=mew,sigma=sigma))
+				time_red.append(player_red)
+				steam_red.append(steamID)
+		
+		# ensure minimum people are playing
+		if( len(team_red) + len(team_blu) ) < min_clients:
+			print "\t\tGroup %d was filtered" % gameNumber
+			continue
 
-      # apply trueskill calculation
-      if result == 3:
-	 [team_blu, team_red] = env.rate([tuple(team_blu), tuple(team_red)],
-	       weights=[tuple(time_blu), tuple(time_red) ] )
-      elif result == 2:
-	 [team_red, team_blu] = env.rate([tuple(team_red), tuple(team_blu)],
-	       weights=[tuple(time_red),tuple(time_blu)])
-      else:
-	 [team_blu, team_red] = env.rate([tuple(team_blu), tuple(team_red)],
-	       weights=[tuple(time_blu), tuple(time_red)], ranks=[0,0])
+		# apply trueskill calculation
+		if result == 3:
+	 		[team_blu, team_red] = env.rate([tuple(team_blu), tuple(team_red)],
+				weights=[tuple(time_blu), tuple(time_red) ] )
+		elif result == 2:
+	 		[team_red, team_blu] = env.rate([tuple(team_red), tuple(team_blu)],
+				weights=[tuple(time_red),tuple(time_blu)])
+		else:
+	 		[team_blu, team_red] = env.rate([tuple(team_blu), tuple(team_red)],
+				weights=[tuple(time_blu), tuple(time_red)], ranks=[0,0])
 
-      # update information in the database
-      updatePlayerInfo(team_red, steam_red)
-      updatePlayerInfo(team_blu, steam_blu)
+		# update information in the database
+		updatePlayerInfo(team_red, steam_red, conn)
+		updatePlayerInfo(team_blu, steam_blu, conn)
 
-      # drop data from temp table
-      cur_del = conn.cursor()
-      cur_del.execute("DELETE FROM temp WHERE random = %d" % gameNumber)
-      cur_del.execute("update players a, (SELECT AVG( DISTINCT(  rank  )  )  agv from players) v set a.`averageRank` = v.agv;");
-      conn.commit(); cur_del.close();
-      
-      cur.close();
-      conn.close()
+		# drop data from temp table
+		cur_del = conn.cursor()
+		cur_del.execute("DELETE FROM temp WHERE random = %d" % gameNumber)
+		cur_del.execute("update players a, (SELECT AVG( DISTINCT(  rank  )  )  agv from players) v set a.`averageRank` = v.agv;");
+		conn.commit(); cur_del.close();
+		
+		cur.close();
+		conn.close()
 
-   con_client.close()
+	con_client.close()
 
 #### MAIN ####
 ##############
@@ -138,11 +135,11 @@ sock.listen(10)
 print "TrueSkill Listening for Connections"
 
 while 1:
-   # wait to accept connection
-   con,addr = sock.accept()
+	# wait to accept connection
+	con,addr = sock.accept()
 
-   # start new thread to deal with client
-   start_new_thread(clientthread,(con,))
+	# start new thread to deal with client
+	start_new_thread(clientthread,(con,))
 
 sock.close()
 
