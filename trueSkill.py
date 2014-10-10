@@ -73,7 +73,7 @@ def clientthread(con_client):
 		gameNumber = con_client.recv(1024)
 
 		if not gameNumber:
-		break
+			break
 
 		gameNumber = int(gameNumber)
 		logging.info("TrueSkill Calculate group: %d" % gameNumber)
