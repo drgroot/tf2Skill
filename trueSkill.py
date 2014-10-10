@@ -5,47 +5,63 @@ import pymysql
 import ConfigParser
 import socket
 import os
+import logging
 from thread import *
 
+# determine where the config file is stored 
+# on the local hard disk
 current_dir = os.path.dirname(os.path.realpath(__file__))
 config = ConfigParser.ConfigParser();
 
-# read configuration file
-config.read("%s/config.file" % current_dir)
-host = config.get('database','host')
-user = config.get('database','user')
-passwd = config.get('database','passwd')
-datb = config.get('database','db')
-sock_port = config.get('database','socket_port')
-min_clients = int(config.get('database','min_clients'))
+# open a logging file 
+logging.basicConfig(filename='trueskill.log',level=logging.DEBUG)
 
-# connect to mysql database
+# read configuration file
+logging.info('Reading Configuration File')
+try:
+	config.read("%s/config.file" % current_dir)
+	host = config.get('database','host')
+	user = config.get('database','user')
+	passwd = config.get('database','passwd')
+	datb = config.get('database','db')
+	sock_port = config.get('database','socket_port')
+	min_clients = int(config.get('database','min_clients'))
+except:
+	logging.critical('Could not read configuration file')
+logging.info('Finished Reading Configuration File')
+
 env = skill.TrueSkill();
 
 # loads old player information
 # return mu, sigma
 def getPlayerSkill(steamID,conn):
-	cur_gP = conn.cursor(); 
-	cur_gP.execute("SELECT mew,sigma FROM players WHERE steamID = '%s'" % steamID);
+	try:
+		cur_gP = conn.cursor(); 
+		cur_gP.execute("SELECT mew,sigma FROM players WHERE steamID = '%s'" % steamID);
 	
-	for person in cur_gP:
-		cur_gP.close();
-		return float(person[0]), float(person[1])
+		for person in cur_gP:
+			cur_gP.close();
+			return float(person[0]), float(person[1])
 
-	cur_gP.execute("INSERT INTO players (steamID) VALUES ('%s') " % steamID)
-	conn.commit();cur_gP.close()
+		cur_gP.execute("INSERT INTO players (steamID) VALUES ('%s') " % steamID)
+		conn.commit();cur_gP.close()
+	except:
+		logging.error('Could not retrieve %s skill from database ' % steamID)
 	return getPlayerSkill(steamID)
 
 def updatePlayerInfo(team_ls,steam_ls,conn):
 	cur_uP = conn.cursor();
 
 	i = 0;
-	for mem in team_ls:
-		data = {"steam" : steam_ls[i], "mu" : mem.mu,
+	try:
+		for mem in team_ls:
+			data = {"steam" : steam_ls[i], "mu" : mem.mu,
 				"sigma" : mem.sigma, "rank": env.expose(mem)};
-		cur_uP.execute("UPDATE players SET mew = %(mu)f, sigma=%(sigma)f, \
+			cur_uP.execute("UPDATE players SET mew = %(mu)f, sigma=%(sigma)f, \
 rank=%(rank)f WHERE steamID='%(steam)s'" % data)
-		i = i+1
+			i = i+1
+	except: 
+		logging.error('Could not update calculated player info')
 	conn.commit()
 	cur_uP.close()
 
@@ -60,7 +76,7 @@ def clientthread(con_client):
 		break
 
 		gameNumber = int(gameNumber)
-		print "TrueSkill Calculate group: %d" % gameNumber
+		logging.info("TrueSkill Calculate group: %d" % gameNumber)
 
 		# open mysql connection
 		conn = pymysql.connect(host=host,port=3306,
@@ -73,7 +89,10 @@ def clientthread(con_client):
 		cur = conn.cursor();
 
 		# load stuff from temp table
-		cur.execute("SELECT * from temp WHERE random = %d" % gameNumber)
+		try:
+			cur.execute("SELECT * from temp WHERE random = %d" % gameNumber)
+		except:
+			logging.error('could not read data from database')
 
 		for player in cur:
 			steamID = player[0]; player_blu = float(player[1]);
@@ -95,7 +114,7 @@ def clientthread(con_client):
 		
 		# ensure minimum people are playing
 		if( len(team_red) + len(team_blu) ) < min_clients:
-			print "\t\tGroup %d was filtered" % gameNumber
+			logging.info('\t\tGroup %d was filtered' % gameNumber)
 			continue
 
 		# apply trueskill calculation
@@ -114,13 +133,17 @@ def clientthread(con_client):
 		updatePlayerInfo(team_blu, steam_blu, conn)
 
 		# drop data from temp table
-		cur_del = conn.cursor()
-		cur_del.execute("DELETE FROM temp WHERE random = %d" % gameNumber)
-		cur_del.execute("update players a, (SELECT AVG( DISTINCT(  rank  )  )  agv from players) v set a.`averageRank` = v.agv;");
-		conn.commit(); cur_del.close();
+		try:
+			cur_del = conn.cursor()
+			cur_del.execute("DELETE FROM temp WHERE random = %d" % gameNumber)
+			cur_del.execute("update players a, (SELECT AVG( DISTINCT(  rank  )  )  agv from players) v set a.`averageRank` = v.agv;");
+			conn.commit(); cur_del.close();
+		except:
+			logging.error('could not prune group %d from database' % gameNumber)
 		
 		cur.close();
 		conn.close()
+		logging.info('Finished Calculating group %d' % gameNumber)
 
 	con_client.close()
 
@@ -134,6 +157,7 @@ sock.listen(10)
 
 print "TrueSkill Listening for Connections"
 
+logging.info('Starting TrueSkill Daemon - Listening')
 while 1:
 	# wait to accept connection
 	con,addr = sock.accept()
@@ -142,5 +166,6 @@ while 1:
 	start_new_thread(clientthread,(con,))
 
 sock.close()
+logging.info('TrueSkill Daemon closing')
 
 exit()
