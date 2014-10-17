@@ -22,7 +22,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.12"
+#define VERSION 	"2.13"
 #define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -296,7 +296,7 @@ public Action:playRank(client, args){
 
 	decl String:query[QUERY_SIZE];
 	Format(query,sizeof(query),
-		"select count(*) rank,(my.rank)/(my.averageRank * 10) * 1200 from players my left join players others \
+		"select count(*)+1 rank,(my.rank)/(my.averageRank * 10) * 1200 from players my left join players others \
 		on others.rank > my.rank where my.SteamID = '%s';", steamID);
 
 	SQL_TQuery(db,rank_query,query,client);
@@ -321,7 +321,7 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 			sigma = SQL_FetchFloat(hndl,1);
 		}
 
-		if(rank <= GetConVarInt(sm_minGlobal) && rank > 0 ){
+		if(rank <= GetConVarInt(sm_minGlobal) && sigma > 0 ){
 			GetClientName(client,name,sizeof(name));
 			CPrintToChatAll("Player: {green}%s {normal}Rank: {green}%d {normal}with {green}%.0f {normal}Elo",
 				name,rank,sigma);
