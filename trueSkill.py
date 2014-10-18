@@ -47,7 +47,7 @@ def getPlayerSkill(steamID,conn):
 		conn.commit();cur_gP.close()
 	except:
 		logging.error('Could not retrieve %s skill from database ' % steamID)
-	return getPlayerSkill(steamID)
+	return getPlayerSkill(steamID,conn)
 
 def updatePlayerInfo(team_ls,steam_ls,conn):
 	cur_uP = conn.cursor();
