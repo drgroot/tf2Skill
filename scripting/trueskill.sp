@@ -220,6 +220,10 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 
 	// determine if to track the game or not
 	track_game  = (client_count >= GetConVarInt(sm_minClients));
+
+	// ensure database is connected 
+	if( db == INVALID_HANDLE )
+		track_game = 0;
 }
 
 /*
