@@ -23,7 +23,7 @@ requires:
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
 #define VERSION 	"2.13"
-#define URL 		"http://yusufali.ca/repos/tf2Skill.git/"
+#define URL 		"https://github.com/yusuf-a/tf2Skill"
 #define sID_size	20
 #define QUERY_SIZE   512
 #define INTERVAL	0.15
