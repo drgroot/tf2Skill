@@ -300,8 +300,8 @@ public Action:playRank(client, args){
 
 	decl String:query[QUERY_SIZE];
 	Format(query,sizeof(query),
-		"select count(*)+1 rank, 30*my.rank + 1500 from players my left join players others \
-		on others.rank > my.rank where my.SteamID = '%s';", steamID);
+		"select count(*) rank, 30*my.rank + 1500 from players my left join players others \
+		on others.rank >= my.rank where my.SteamID = '%s';", steamID);
 
 	SQL_TQuery(db,rank_query,query,client);
 	
