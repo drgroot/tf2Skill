@@ -136,7 +136,6 @@ def clientthread(con_client):
 		try:
 			cur_del = conn.cursor()
 			cur_del.execute("DELETE FROM temp WHERE random = %d" % gameNumber)
-			cur_del.execute("update players a, (SELECT AVG( DISTINCT(  rank  )  )  agv from players) v set a.`averageRank` = v.agv;");
 			conn.commit(); cur_del.close();
 		except:
 			logging.error('could not prune group %d from database' % gameNumber)
