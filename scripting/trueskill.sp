@@ -167,7 +167,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		decl String:query[QUERY_SIZE];
 		Format(query,sizeof(query),
 		"insert into players (steamID,name) values ('%s','%s') on duplicate key \
-		update lastConnect = CURRENT_TIMESTAMP AND name = '%s';",
+		update lastConnect = now() AND name = '%s';",
 			steamID,playerName,playerName);
 		SQL_TQuery(db,T_query,query,0);
 
