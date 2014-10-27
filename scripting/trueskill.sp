@@ -22,7 +22,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.13"
+#define VERSION 	"2.14"
 #define URL 		"https://github.com/yusuf-a/tf2Skill"
 #define sID_size	20
 #define QUERY_SIZE   512
