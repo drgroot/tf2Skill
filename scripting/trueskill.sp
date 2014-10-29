@@ -22,7 +22,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.15"
+#define VERSION 	"2.16"
 #define URL 		"https://github.com/yusuf-a/tf2Skill"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -58,11 +58,11 @@ public OnPluginStart(){
 	}
 
 	/* define convars */
-	CreateConVar("sm_trueskill_version",VERSION,"public CVar shows the plugin version");
-	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking");
-	sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script");
-	sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script");
-	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off");
+	CreateConVar("sm_trueskill_version",VERSION,"public CVar shows the plugin version",FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_REPLICATED);
+	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking", FCVAR_NOTIFY);
+	sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script", FCVAR_PROTECTED);
+	sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script", FCVAR_PROTECTED);
+	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off", FCVAR_NOTIFY);
 
 	/* bind methods to game events */
 	HookEvent("player_team",Event_pTeam);
@@ -303,13 +303,13 @@ public Action:playRank(client, args){
 		"select count(*) rank, 30*my.rank + 1500 from players my left join players others \
 		on others.rank >= my.rank where my.SteamID = '%s';", steamID);
 
-	SQL_TQuery(db,rank_query,query,client);
+	SQL_TQuery(db, rank_query, query, GetClientUserId(client) );
 	
 	return Plugin_Handled;
 }
 
 public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
-	new client = data;
+	new client = GetClientOfUserId(data);
 	new rank = 0; new Float:sigma = 100.0;
 	decl String:name[MAX_NAME_LENGTH];
 

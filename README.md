@@ -92,8 +92,8 @@ Feel free to use it as a reference or just rip the website and use it as your ow
 
 * [ChangeLog][7]
 * [Previous Releases][8]
-* SourceCode: [GitHub][9] or [My Website][10]
-* [Development Progress][11]
+* SourceCode: [GitHub][9] 
+* [Development Progress][10]
 
 ##Issues / Bugs
 
@@ -109,5 +109,4 @@ All issues/bugs please [report here](https://github.com/yusuf-a/tf2Skill/issues)
 [7]: https://github.com/yusuf-a/tf2Skill/commits/master
 [8]: https://github.com/yusuf-a/tf2Skill/releases
 [9]: https://github.com/yusuf-a/tf2Skill
-[10]: http://yusufali.ca/repos/tf2Skill.git/
-[11]: https://github.com/yusuf-a/tf2Skill/network
+[10]: https://github.com/yusuf-a/tf2Skill/network
