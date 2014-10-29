@@ -49,7 +49,7 @@
  *
  * @return 			New Map Handle, which must be freed via CloseHandle().
  */
-native Handle:CreateTrie();
+native StringMap:CreateTrie();
 
 /**
  * Sets a value in a hash map, either inserting a new entry or replacing an old one.
@@ -154,3 +154,63 @@ native ClearTrie(Handle:map);
  * @error			Invalid Handle.
  */
 native GetTrieSize(Handle:map);
+
+/* Object-oriented wrapper for maps. */
+methodmap StringMap < Handle {
+	public StringMap() = CreateTrie;
+	public SetValue() = SetTrieValue;
+	public SetArray() = SetTrieArray;
+	public SetString() = SetTrieString;
+	public GetValue() = GetTrieValue;
+	public GetArray() = GetTrieArray;
+	public GetString() = GetTrieString;
+	public Remove() = RemoveFromTrie;
+	public Clear() = ClearTrie;
+	property int Size {
+		public get() = GetTrieSize;
+	}
+}
+
+/**
+ * Creates a snapshot of all keys in the map. If the map is changed after this
+ * call, the changes are not reflected in the snapshot. Keys are not sorted.
+ *
+ * @param map       Map Handle.
+ * @return			New Map Snapshot Handle, which must be closed via CloseHandle().
+ * @error			Invalid Handle.
+ */
+native Handle:CreateTrieSnapshot(Handle:map);
+
+/**
+ * Returns the number of keys in a map snapshot. Note that this may be
+ * different from the size of the map, since the map can change after the
+ * snapshot of its keys was taken.
+ *
+ * @param snapshot	Map snapshot.
+ * @return			Number of keys.
+ * @error			Invalid Handle.
+ */
+native TrieSnapshotLength(Handle:snapshot);
+
+/**
+ * Returns the buffer size required to store a given key. That is, it returns
+ * the length of the key plus one.
+ *
+ * @param snapshot	Map snapshot.
+ * @param index		Key index (starting from 0).
+ * @return 			Buffer size required to store the key string.
+ * @error			Invalid Handle or index out of range.
+ */
+native TrieSnapshotKeyBufferSize(Handle:snapshot, index);
+
+/**
+ * Retrieves the key string of a given key in a map snapshot.
+ *
+ * @param snapshot	Map snapshot.
+ * @param index		Key index (starting from 0).
+ * @param buffer	String buffer.
+ * @param maxlength	Maximum buffer length.
+ * @return			Number of bytes written to the buffer.
+ * @error			Invalid Handle or index out of range.
+ */
+native GetTrieSnapshotKey(Handle:snapshot, index, String:buffer[], maxlength);
