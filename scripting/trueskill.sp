@@ -15,8 +15,9 @@ requires:
 #include <sourcemod>
 #include <dbi>
 #include <tf2_stocks>
+
 #include <updater>
-#include <socket>
+#include <steamtools>
 #include <morecolors>
 
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
@@ -33,16 +34,13 @@ Handle db;
 Handle players_stats;
 Handle players_times;
 Handle players;
-Handle socket;
 int game_start = 0;
 int track_game = 0;
 int client_count = 0;
-int gameNumber = 0;
 
 /* define convars */
 Handle sm_minClients = INVALID_HANDLE;
 Handle sm_server = INVALID_HANDLE;
-Handle sm_port = INVALID_HANDLE;
 Handle sm_minGlobal = INVALID_HANDLE;
 
 /* delcare plublic variable information */
@@ -61,8 +59,7 @@ public OnPluginStart(){
 	/* define convars */
 	CreateConVar("sm_trueskill_version",VERSION,"public CVar shows the plugin version");
 	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking");
-	sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script");
-	sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script");
+	sm_server = CreateConVar("sm_trueskill_server","http://yusufali.ca/update.php","remote path to trigger rank calculations");
 	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off");
 
 	/* bind methods to game events */
@@ -250,7 +247,6 @@ public Event_rEnd(Handle event, const char namep[], bool dontBroadcast){
 	int result = GetEventInt(event,"team");
 	int random = GetRandomInt(0,400);
 	float gameDuration = float(GetTime() - game_start);
-	gameNumber = random;
 
 	/* ensure that the game was not a farm fest */
 	if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) 
@@ -264,11 +260,16 @@ public Event_rEnd(Handle event, const char namep[], bool dontBroadcast){
 
 		float blue = player_time[1];
 		float red = player_time[0];
-	
+		
+		int lastQuery = 0
+		if( i == (GetArraySize(players) - 1 ) ){
+			lastQuery = random;
+		}
+
 		/* insert data into database */
 		Format(query,sizeof(query),"INSERT INTO `temp` (steamid,time_blue,time_red,result,random) \
 		 VALUES(%d,%f,%f,%d,%d);", steam_id,blue/gameDuration, red/gameDuration,result,random);
-		SQL_TQuery(db,T_query,query,i == (GetArraySize(players) - 1));
+		SQL_TQuery(db,T_query,query,  lastQuery  );
 
 		/* loop through role stats and store into mysql */
 		for(new j=0; j<10; j++){
@@ -383,39 +384,32 @@ printTErr(Handle hndle,const char error[]){
 }
 
 /* typical threaded query prototype */
-public T_query(Handle owner,Handle hndle,const char error[],any data){
+public T_query( Handle owner,Handle hndle,const char error[], any gameNumber ){
 	printTErr(hndle, error );
+	
+	/* that means all data is in temp table */
+	if( gameNumber !=  0){
+		/* format convar update url */
+		char updateURL[200]
+		GetConVarString( sm_server, updateURL, sizeof(updateURL) )
+		Format( updateURL, sizeof(updateURL) ,  "%s?game=%d", updateURL, gameNumber )
 
-	if(data == 1){
-		connectSocket();
+		/* post to remote server */
+		HTTPRequestHandle req = Steam_CreateHTTPRequest( HTTPMethod_GET, updateURL )
+		Steam_SendHTTPRequest( req, onComplete )
 	}
 }
 
-/* socket functions for socket stuff */
-public connectSocket(){
-	socket = SocketCreate(SOCKET_TCP,OnSocketError);
-	char sock_serv[100];
-	GetConVarString(sm_server,sock_serv,sizeof(sock_serv));
-	SocketConnect(socket,OnSockCon,OnSockRec,OnSockDis,sock_serv,GetConVarInt(sm_port));
-}
-
-public OnSocketError(Handle sock, const errorType, const errorNum, any hFile ){
-	LogError("TrueSkill - Socket Error %d (errno %d)",errorType,errorNum);
-}
-public OnSockDis(Handle sock,any hFile){CloseHandle(sock);}
-public OnSockRec(Handle sock,char data[],const d,any:f){}
-public OnSockCon(Handle sock,any f){
-	if(gameNumber == 0){
-		return;
+public onComplete( HTTPRequestHandle req, bool success, HTTPStatusCode status ){
+	if( !success || status != HTTPStatusCode_OK ){
+		LogError("TrueSkill - Remote Post Failed")
+		return
 	}
 
-	char gNum[10]; 
-	Format( gNum, sizeof(gNum), "%d", gameNumber);
-	SocketSend(sock,gNum);
-	gameNumber = 0;
+	Steam_ReleaseHTTPRequest( req )
 }
 
-/* quick ref functions */
+/* returns player id */
 public getPlayerID( client ){
 	char steam_id[STEAMID]
 	GetClientAuthId( client, AuthIdType:steam64, steam_id, STEAMID )
