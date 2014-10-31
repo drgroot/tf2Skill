@@ -1,7 +1,9 @@
 #TF2 Skill
 ###A TrueSkill implementation for Team Fortress 2
 
-TF2 Skill is an adaptation of [Microsoft's TrueSkill][5] ranking system into source games. This plugin has only been tested and designed to work with Team Fortress 2. 
+TF2 Skill is an adaptation of [Microsoft's TrueSkill][5] ranking system into source games. This plugin has only been tested and designed to work with Team Fortress 2.
+
+A example population distribution as a result of using TrueSkill can be viewed [here](http://www.playtf2.com/plot/40)
 
 ##Dependencies/Requirements
 * [SourceSockets Extension][3]
