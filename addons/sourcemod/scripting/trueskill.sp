@@ -26,110 +26,104 @@ Author: Yusuf Ali
 #define INTERVAL	0.15
 #define steam64 AuthId_SteamID64
 
-new Handle:db;
-new Handle:players_stats;
-new Handle:players_times;
-new Handle:players;
-new Handle:socket;
-new game_start = 0;
-new track_game = 0;
-new client_count = 0;
-new gameNumber = 0;
+Handle db				// database handle
+Handle players_stats	// player k:d storage variable
+Handle players_times	// player time storage variable
+Handle players			// player ids variable		
+game_start = 0			// time of round start
+track_game = 0			// track game or not
+client_count = 0		// current num of clients
 
 /* define convars */
-new Handle:sm_minClients = INVALID_HANDLE;
-new Handle:sm_server = INVALID_HANDLE;
-new Handle:sm_port = INVALID_HANDLE;
-new Handle:sm_minGlobal = INVALID_HANDLE;
+Handle sm_minClients = null
+Handle sm_url = null
+Handle sm_minGlobal = null
 
 /* delcare plublic variable information */
-public Plugin:myinfo = {name = PLUGIN_NAME,author = AUTHOR,description = "",version = VERSION,url = URL};
+public Plugin myinfo = {name = PLUGIN_NAME,author = AUTHOR,description = "",version = VERSION,url = URL};
 
 public OnPluginStart(){
 	/* connect to database */
-	new String:error[255];
-	db = SQL_DefConnect(error,sizeof(error));
+	char error[255]
+	db = SQL_DefConnect(error,sizeof(error))
 
 	/* add to updater */
-	if (LibraryExists("updater")){
-		Updater_AddPlugin(UPDATE_URL);
+	if(	LibraryExists( "updater" )	){
+		Updater_AddPlugin(UPDATE_URL)
 	}
 
 	/* define convars */
-	CreateConVar("sm_trueskill_version",VERSION,"public CVar shows the plugin version",FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_REPLICATED);
-	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking", FCVAR_NOTIFY);
-	sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script", FCVAR_PROTECTED);
-	sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script", FCVAR_PROTECTED);
-	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off", FCVAR_NOTIFY);
+	CreateConVar("sm_trueskill_version",VERSION,"public CVar shows the plugin version",FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_REPLICATED)
+	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking", FCVAR_NOTIFY)
+	sm_url = CreateConVar("sm_trueskill_url","http://server/trueskill.php","url to trueskill", FCVAR_PROTECTED)
+	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off", FCVAR_NOTIFY)
 
 	/* bind methods to game events */
-	HookEvent("player_team",Event_pTeam);
-	HookEvent("teamplay_round_start", Event_rStart);
-	HookEvent("teamplay_round_win",Event_rEnd);
-	HookEvent("player_disconnect", Event_pDisconnect);
-	HookEvent("player_death", Event_pDeath);
-	RegConsoleCmd("sm_rank",playRank);
+	HookEvent("player_team",Event_pTeam)
+	HookEvent("teamplay_round_start", Event_rStart)
+	HookEvent("teamplay_round_win",Event_rEnd)
+	HookEvent("player_disconnect", Event_pDisconnect)
+	HookEvent("player_death", Event_pDeath)
+	RegConsoleCmd("sm_rank",playRank)
     
-	players_stats = CreateArray(20,0);
-	players_times = CreateArray(2,0);
-	players = CreateArray(sID_size,0);
+	players_stats = CreateArray( 20,0 )
+	players_times = CreateArray( 2,0 )
+	players = CreateArray( STEAMID,0 )
 }
-
-public OnLibraryAdded(const String:name[]){
-	 if (StrEqual(name, "updater"))
-	 {
-		  Updater_AddPlugin(UPDATE_URL)
+public OnLibraryAdded(	const char name[]	){
+	 if(	StrEqual( name, "updater" )	){
+		Updater_AddPlugin(UPDATE_URL)
 	 }
 }
 
 /* METHODS FOR GAME EVENTS */
-
-public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
+public Event_pDeath( Handle event, const char name[], bool dontBroadcast){
 	/* only if tracking game */
 	if(!track_game)
-		return;
+		return
 
 	/* ensure not a fake death */
 	if( GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
-		return;
+		return
 	
-	decl atker[20]; decl victm[20];
+	int atker[20]
+	int victm[20]
 
 	/* get client index */
-	new killer = GetClientOfUserId( GetEventInt(event, "attacker") );
-	new victim = GetClientOfUserId( GetEventInt(event, "userid") );
+	new killer = GetClientOfUserId( GetEventInt(event, "attacker") )
+	new victim = GetClientOfUserId( GetEventInt(event, "userid") )
 
 	/* ensure not suicide */
 	if(killer == victim)
-		return;
+		return
 
 	/* ensure client index is valid */
 	if(killer*victim <= 0 || killer > MaxClients || victim > MaxClients)
-		return;
+		return
 
 	/* get client roles */
-	new TFClassType:killer_role = TF2_GetPlayerClass( killer );
-	new TFClassType:victim_role = TF2_GetPlayerClass( victim );
+	TFClassType killer_role = TF2_GetPlayerClass( killer )
+	TFClassType victim_role = TF2_GetPlayerClass( victim )
 
 	/* get adt_array index and old stats */
 	killer = getPlayerID(killer); victim = getPlayerID(victim);
-	GetArrayArray( players_stats, killer, atker, sizeof(atker) );
-	GetArrayArray( players_stats, victim, victm, sizeof(victm) );
+	GetArrayArray( players_stats, killer, atker, sizeof(atker) )
+	GetArrayArray( players_stats, victim, victm, sizeof(victm) )
 
 	/* increment data */
-	atker[killer_role]++;
-	victm[victim_role + 10]++;
+	atker[killer_role]++
+	victm[victim_role + TFClassType:10]++
 
 	/* store into <adt_array> player_stats */
-	SetArrayArray( players_stats, killer, atker, sizeof(atker) );
-	SetArrayArray( players_stats, victim, victm, sizeof(victm) );
+	SetArrayArray( players_stats, killer, atker, sizeof(atker) )
+	SetArrayArray( players_stats, victim, victm, sizeof(victm) )
 }
 
 /*
 	- keep track of clients disconnecting
 	- update client playing time
 */
-public Event_pDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
+public Event_pDisconnect(Handle event, const char name[], bool dontBroadcast){
 	if(!track_game)
 		return;
 
