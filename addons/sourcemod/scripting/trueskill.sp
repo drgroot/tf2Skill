@@ -9,6 +9,12 @@ Author: Yusuf Ali
 
 */
 
+/* MySQL Query definitions */
+#define NEWPLAYER "insert into players (steamID,name) values (%s,'%s') on duplicate key update lastConnect = now() AND name = '%s';"
+#define INTOTEMP "INSERT INTO `temp` (steamid,time_blue,time_red,result,random) VALUES(%s,%f,%f,%d,%d)"
+#define STATS "INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES (%s.%d,%s,%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d"
+#define RANK "select count(*) rank, 30*my.rank + 1500 from players my left join players others on others.rank >= my.rank where my.SteamID = %s"
+
 #include <sourcemod>
 #include <dbi>
 #include <tf2_stocks>
@@ -58,45 +64,45 @@ public OnPluginStart(){
 	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off", FCVAR_NOTIFY)
 
 	/* bind methods to game events */
-	HookEvent("player_team",Event_pTeam)
-	HookEvent("teamplay_round_start", Event_rStart)
-	HookEvent("teamplay_round_win",Event_rEnd)
-	HookEvent("player_death", Event_pDeath)
-	RegConsoleCmd("sm_rank",playRank)
+	HookEvent( "player_team", Event_pTeam )
+	HookEvent( "teamplay_round_start", Event_rStart )
+	HookEvent( "teamplay_round_win", Event_rEnd )
+	HookEvent( "player_death", Event_pDeath )
+	RegConsoleCmd( "sm_rank", playRank )
     
 	players_stats = CreateArray( 20,0 )
 	players_times = CreateArray( 2,0 )
-	players = CreateArray( 1,0 )
+	players = CreateArray( STEAMID,0 )
 }
 public OnLibraryAdded(	const char name[]	){
 	 if(	StrEqual( name, "updater" )	){
-		Updater_AddPlugin(UPDATE_URL)
+		Updater_AddPlugin( UPDATE_URL )
 	 }
 }
 
 /* METHODS FOR GAME EVENTS */
 public Event_pDeath( Handle event, const char name[], bool dontBroadcast){
 	/* only if tracking game */
-	if(!track_game)
+	if( !track_game )
 		return
 
 	/* ensure not a fake death */
-	if( GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
+	if(	GetEventInt( event, "death_flags" ) & TF_DEATHFLAG_DEADRINGER	)
 		return
 	
 	int atker[20]
 	int victm[20]
 
 	/* get client index */
-	new killer = GetClientOfUserId( GetEventInt(event, "attacker") )
-	new victim = GetClientOfUserId( GetEventInt(event, "userid") )
+	int killer = GetClientOfUserId( GetEventInt(event, "attacker") )
+	int victim = GetClientOfUserId( GetEventInt(event, "userid") )
 
 	/* ensure not suicide */
-	if(killer == victim)
+	if( killer == victim )
 		return
 
 	/* ensure client index is valid */
-	if(killer*victim <= 0 || killer > MaxClients || victim > MaxClients)
+	if(	killer*victim <= 0 || killer > MaxClients || victim > MaxClients )
 		return
 
 	/* get client roles */
@@ -130,32 +136,30 @@ public Event_pTeam( Handle event, const char name[], bool dontBroadcast){
 		return
 	
 	/* get steamID */
-	int steamID = getSteamID( client )
+	char steamID[STEAMID]
+	steamID = getSteamID( client )
 	int player = getPlayerID( client )
 
 	/* get player name */
 	char playerName[MAX_NAME_LENGTH *2 +1]
-	GetClientName( client, playerName, sizeof(playerName) )
-	SQL_EscapeString( db,playerName,playerName,sizeof( playerName ) )
+	GetClientName( client, playerName, sizeof( playerName )	)
+	SQL_EscapeString( db, playerName, playerName,sizeof( playerName )	)
 
 	/* determine if player switched teams or joined */
 	if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
 		/* add to database, and update last connect */
 		char query[QUERY_SIZE]
-		Format(	query, sizeof(query),
-		"insert into players (steamID,name) values (%d,'%s') on duplicate key \
-		update lastConnect = now() AND name = '%s';",
-			steamID,playerName,playerName)
+		Format(	query, sizeof(query), NEWPLAYER , steamID, playerName, playerName	)
 		SQL_TQuery(db,T_query,query,0)
 
 		/* ensure we are tracking data */
-		if(!track_game)
+		if( !track_game )
 			return
 
 		/* otherwise populate the arrays */
 		if(player == -1){
-		  PushArrayCell( players, steamID )
-		  player = FindValueInArray( players,steamID )
+		  PushArrayString( players, steamID )
+		  player = FindStringInArray( players, steamID )
 		  PushArrayArray(players_times,{0.0,0.0})
 		  PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
 		  								0,0,0,0,0,0,0,0,0,0})
@@ -177,14 +181,16 @@ public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 	ClearArray(players_stats)
 	int client_count = 0
 
+	char steam_id[STEAMID]
+
 	//loop through all players that are alive
 	for(new i=1;i<= MaxClients;i++){
 		/* ensures client is connected */
 		if( IsClientInGame( i )  && !IsFakeClient( i ) ){
 			client_count++
-			int steam_id = getSteamID( i )
+			steam_id = getSteamID( i )
 
-			PushArrayCell( players, steam_id )
+			PushArrayString( players, steam_id )
 			PushArrayArray( players_times,{0.0,0.0} )
 			PushArrayArray( players_stats,{0,0,0,0,0,0,0,0,0,0,
 											0,0,0,0,0,0,0,0,0,0} )
@@ -194,11 +200,11 @@ public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 		}
 	}
 
-	// determine if to track the game or not
-	track_game  = (client_count >= GetConVarInt(sm_minClients))
+	/* determine if to track the game or not */
+	track_game  = (	client_count >= GetConVarInt(sm_minClients)	)
 
-	// ensure database is connected 
-	if( db == INVALID_HANDLE )
+	/* ensure database is connected */
+	if( db == null )
 		track_game = 0
 }
 
@@ -215,6 +221,7 @@ public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
 	char query[QUERY_SIZE]
 	float player_time[2]
 	int player_stat[20]
+	char steam_id[STEAMID]
 
 	track_game = 0
 
@@ -233,15 +240,15 @@ public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
 		/* store player data into buffers */
 		GetArrayArray( players_stats,i,player_stat,sizeof(player_stat) );
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
-		int steam_id = GetArrayCell( players,i );
+		GetArrayString( players,i,steam_id, STEAMID );
 
 		float blue = player_time[1]
 		float red = player_time[0]
 	
 		/* insert data into database */
-		Format(query,sizeof(query),"INSERT INTO `temp` (steamid,time_blue,time_red,result,random) \
-		 VALUES(%d,%f,%f,%d,%d)", steam_id,blue/gameDuration, red/gameDuration,result,random)
-		SQL_TQuery( db,T_query,query, last * random )
+		Format( query,sizeof(query), INTOTEMP , 
+			steam_id, blue/gameDuration, red/gameDuration, result, random )
+		SQL_TQuery( db,T_query, query, last * random )
 
 		/* loop through role stats and store into mysql */
 		for(new j=0; j<10; j++){
@@ -253,10 +260,8 @@ public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
 				continue
 			
 			/* build query and insert into database */
-			Format(query, sizeof(query), 
-				"INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES (%d.%d,%d,%d,%d,%d) \
-				ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d",
-				steam_id,role,steam_id,role,kills,deths,kills,deths);
+			Format( query, sizeof(query), STATS , 
+				steam_id, role, steam_id, role, kills, deths, kills, deths );
 			SQL_TQuery( db,T_query,query,0 )
 		}
 	}
@@ -277,12 +282,11 @@ public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
 
 */
 public Action playRank(client, args){
-	int steamID = getSteamID( client )
+	char steamID[STEAMID]
+	steamID = getSteamID( client )
 
 	char query[QUERY_SIZE]
-	Format( query,sizeof(query),
-		"select count(*) rank, 30*my.rank + 1500 from players my left join players others \
-		on others.rank >= my.rank where my.SteamID = %d", steamID)
+	Format( query,sizeof(query), RANK, steamID 	)
 
 	SQL_TQuery(db, rank_query, query, GetClientUserId(client) )
 	
@@ -296,7 +300,7 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 	if(!IsClientInGame(client)){
 		return
 	}
-	if(hndl == INVALID_HANDLE){
+	if( hndl == null ){
 		printTErr(hndl,error)
 	}
 	else{
@@ -322,44 +326,44 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 	HANDLES UPDATE TIME STUFF
 
 */
-public Action:UpdateTimes(Handle:timer,any:client){
+public Action UpdateTimes( Handle timer, any client ){
 	/* ensure tracking game */
-	if(!track_game || !IsClientConnected(client))
+	if(	!track_game || !IsClientConnected(client)	)
 		return Plugin_Stop
 
-	if(!IsClientInGame(client))
+	if(	!IsClientInGame(client)	)
 		return Plugin_Stop
 
 	/* get player id in array */
-	int player = getPlayerID(client)
+	int player = getPlayerID( client )
 
 	/* get the required data array information */
 	float player_time[2];
-	GetArrayArray(players_times,player,player_time,sizeof(player_time)); 
+	GetArrayArray( players_times, player, player_time, sizeof( player_time ) ); 
 
 	/* determine which team counter to increment */
-	switch (GetClientTeam(client)){
-		case (_:TFTeam_Red): {
+	switch ( GetClientTeam( client )	){
+		case ( _:TFTeam_Red ): {
 			player_time[0] = player_time[0] + INTERVAL
 		}
 
-		case (_:TFTeam_Blue): {
+		case ( _:TFTeam_Blue ): {
 			player_time[1] = player_time[1] + INTERVAL
 		}
 	}
 	/* store array back into adt */
-	SetArrayArray(players_times,player,player_time,sizeof(player_time));
+	SetArrayArray(	players_times, player, player_time, sizeof( player_time )	)
 
-	return Plugin_Continue;
+	return Plugin_Continue
 }
 
 /* prints an error given handle and error string */
-printTErr(Handle:hndle,const String:error[]){
-	if(hndle == INVALID_HANDLE){
-		LogError("TrueSkill - Query Failed: %s",error);
-		return 0;
+printTErr( Handle hndle, const char error[] ){
+	if( hndle == null ){
+		LogError( "TrueSkill - Query Failed: %s", error )
+		return 0
 	}
-	return 1;
+	return 1
 }
 
 
@@ -368,11 +372,11 @@ printTErr(Handle:hndle,const String:error[]){
 	PlayerID / SteamID Functions
 
 */
-int getSteamID( client ){
+char[] getSteamID( client ){
 	char steam_id[STEAMID]
 	GetClientAuthId( client, AuthIdType:steam64 , steam_id, STEAMID )
-	return StringToInt( steam_id )
+	return steam_id
 }
 int getPlayerID( client ){
-	return FindValueInArray( players, getSteamID( client ) )
+	return FindStringInArray( players, getSteamID( client ) )
 }
