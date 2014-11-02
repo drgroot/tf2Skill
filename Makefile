@@ -1,4 +1,5 @@
-CC = ./spcomp
+CC = ./addons/sourcemod/scripting/spcomp
+INC = addons/sourcemod/scripting/include
 
-compile: scripting/trueskill.sp
-	$(CC) scripting/trueskill.sp -oplugins/trueskill.smx
+compile: addons/sourcemod/scripting/trueskill.sp
+	$(CC) addons/sourcemod/scripting/trueskill.sp -oaddons/sourcemod/plugins/trueskill.smx -i$(INC)
