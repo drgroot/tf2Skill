@@ -4,4 +4,3 @@ user: playtf2
 db:	playtf2
 passwd: password
 min_clients: 16
-socket_port: 5000
