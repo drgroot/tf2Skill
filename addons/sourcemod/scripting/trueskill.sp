@@ -32,7 +32,6 @@ Handle players_times	// player time storage variable
 Handle players			// player ids variable		
 game_start = 0			// time of round start
 track_game = 0			// track game or not
-client_count = 0		// current num of clients
 
 /* define convars */
 Handle sm_minClients = null
@@ -62,13 +61,12 @@ public OnPluginStart(){
 	HookEvent("player_team",Event_pTeam)
 	HookEvent("teamplay_round_start", Event_rStart)
 	HookEvent("teamplay_round_win",Event_rEnd)
-	HookEvent("player_disconnect", Event_pDisconnect)
 	HookEvent("player_death", Event_pDeath)
 	RegConsoleCmd("sm_rank",playRank)
     
 	players_stats = CreateArray( 20,0 )
 	players_times = CreateArray( 2,0 )
-	players = CreateArray( STEAMID,0 )
+	players = CreateArray( 1,0 )
 }
 public OnLibraryAdded(	const char name[]	){
 	 if(	StrEqual( name, "updater" )	){
@@ -120,64 +118,51 @@ public Event_pDeath( Handle event, const char name[], bool dontBroadcast){
 }
 
 /*
-	- keep track of clients disconnecting
-	- update client playing time
-*/
-public Event_pDisconnect(Handle event, const char name[], bool dontBroadcast){
-	if(!track_game)
-		return
-
-	client_count--
-}
-
-/*
 	- keep tract of client playing time
 	- update client playing time
 */
-public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
-	new oTeam = GetEventInt(event,"oldteam");
-	new client = GetClientOfUserId(GetEventInt(event,"userid"));
+public Event_pTeam( Handle event, const char name[], bool dontBroadcast){
+	int oTeam = GetEventInt( event,"oldteam" )
+	int client = GetClientOfUserId(	GetEventInt( event,"userid" )	)
 
 	/* ensure its a legit client */
 	if(IsFakeClient(client))
-		return;
+		return
 	
 	/* get steamID */
-	decl String:steamID[sID_size]; steamID = getSteamID( client );
-	new player = getPlayerID( client );
+	int steamID = getSteamID( client )
+	int player = getPlayerID( client )
 
 	/* get player name */
-	decl String:playerName[MAX_NAME_LENGTH *2 +1];
-	GetClientName(client, playerName, sizeof(playerName));
-	SQL_EscapeString(db,playerName,playerName,sizeof(playerName));
+	char playerName[MAX_NAME_LENGTH *2 +1]
+	GetClientName( client, playerName, sizeof(playerName) )
+	SQL_EscapeString( db,playerName,playerName,sizeof( playerName ) )
 
 	/* determine if player switched teams or joined */
 	if(oTeam != _:TFTeam_Red && oTeam != _:TFTeam_Blue){
-		client_count++;
-
 		/* add to database, and update last connect */
-		decl String:query[QUERY_SIZE];
-		Format(query,sizeof(query),
-		"insert into players (steamID,name) values ('%s','%s') on duplicate key \
+		char query[QUERY_SIZE]
+		Format(	query, sizeof(query),
+		"insert into players (steamID,name) values (%d,'%s') on duplicate key \
 		update lastConnect = now() AND name = '%s';",
-			steamID,playerName,playerName);
-		SQL_TQuery(db,T_query,query,0);
+			steamID,playerName,playerName)
+		SQL_TQuery(db,T_query,query,0)
 
 		/* ensure we are tracking data */
 		if(!track_game)
-			return;
+			return
 
 		/* otherwise populate the arrays */
 		if(player == -1){
-		  PushArrayString(players,steamID);
-		  player = FindStringInArray(players,steamID);
-		  PushArrayArray(players_times,{0.0,0.0});
+		  PushArrayCell( players, steamID )
+		  player = FindValueInArray( players,steamID )
+		  PushArrayArray(players_times,{0.0,0.0})
 		  PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
-		  								0,0,0,0,0,0,0,0,0,0});
+		  								0,0,0,0,0,0,0,0,0,0})
 		}
 
 		/* create timer */
-		CreateTimer(INTERVAL,UpdateTimes,client,TIMER_REPEAT);
+		CreateTimer( INTERVAL,UpdateTimes,client,TIMER_REPEAT );
 	}
 }
 
@@ -185,174 +170,181 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 	- reset arrays, grab client information
 	 - structure data
 */
-public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
+public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 	/* restart required variables */
-	game_start = GetTime(); client_count = 0;
-	ClearArray(players); ClearArray(players_times);
-	ClearArray(players_stats); 
-
-	decl String:steam_id[sID_size];
+	game_start = GetTime(); 
+	ClearArray(players); ClearArray(players_times)
+	ClearArray(players_stats)
+	int client_count = 0
 
 	//loop through all players that are alive
 	for(new i=1;i<= MaxClients;i++){
 		/* ensures client is connected */
-		if( (IsClientInGame(i))  && (!IsFakeClient(i)) ){
-			client_count++;
-			steam_id = getSteamID(i);
+		if( IsClientInGame( i )  && !IsFakeClient( i ) ){
+			client_count++
+			int steam_id = getSteamID( i )
 
-			PushArrayString(players,steam_id);
-			PushArrayArray(players_times,{0.0,0.0});
-			PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
-											0,0,0,0,0,0,0,0,0,0});
+			PushArrayCell( players, steam_id )
+			PushArrayArray( players_times,{0.0,0.0} )
+			PushArrayArray( players_stats,{0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0} )
 
 			/* create timer */
-			CreateTimer(INTERVAL, UpdateTimes,i,TIMER_REPEAT);
+			CreateTimer( INTERVAL, UpdateTimes,i,TIMER_REPEAT )
 		}
 	}
 
 	// determine if to track the game or not
-	track_game  = (client_count >= GetConVarInt(sm_minClients));
+	track_game  = (client_count >= GetConVarInt(sm_minClients))
 
 	// ensure database is connected 
 	if( db == INVALID_HANDLE )
-		track_game = 0;
+		track_game = 0
 }
 
 /*
 	- finalize client data, playing time, teams etc
 	 - post data to trueskill implementation
 */
-public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
+public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
 	/* ensure this game is to be tracked */
 	if(!track_game)
-		return;
+		return
 
 	/* declare useful buffers */
-	decl String:steam_id[sID_size];
-	new String:query[QUERY_SIZE];
-	decl Float:player_time[2];
-	decl player_stat[20];
+	char query[QUERY_SIZE]
+	float player_time[2]
+	int player_stat[20]
 
-	track_game = 0;
+	track_game = 0
 
 	/* declare useful comparison */
-	new result = GetEventInt(event,"team");
-	new random = GetRandomInt(0,400);
-	new Float:gameDuration = float(GetTime() - game_start);
-	gameNumber = random;
+	int result = GetEventInt( event,"team" )
+	int random = GetRandomInt( 0,400 )
+	float gameDuration = float( GetTime() - game_start )
 
 	/* ensure that the game was not a farm fest */
-	if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) 
-		return;
+	if( GetArraySize(players) < 24 ) 
+		return
 
-	for(new i=0;i<GetArraySize(players);i++){
+	for(int i=0; i<GetArraySize(players); i++){
+		int last = (i == GetArraySize(players) -1)
+
 		/* store player data into buffers */
 		GetArrayArray( players_stats,i,player_stat,sizeof(player_stat) );
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
-		GetArrayString(players,i,steam_id,sizeof(steam_id));
+		int steam_id = GetArrayCell( players,i );
 
-		new Float:blue = player_time[1];
-		new Float:red = player_time[0];
+		float blue = player_time[1]
+		float red = player_time[0]
 	
 		/* insert data into database */
 		Format(query,sizeof(query),"INSERT INTO `temp` (steamid,time_blue,time_red,result,random) \
-		 VALUES('%s',%f,%f,%d,%d);", steam_id,blue/gameDuration, red/gameDuration,result,random);
-		SQL_TQuery(db,T_query,query,i == (GetArraySize(players) - 1));
+		 VALUES(%d,%f,%f,%d,%d)", steam_id,blue/gameDuration, red/gameDuration,result,random)
+		SQL_TQuery( db,T_query,query, last * random )
 
 		/* loop through role stats and store into mysql */
 		for(new j=0; j<10; j++){
 			new role = j;
-			new kills = player_stat[j];
-			new deths = player_stat[j+10];
+			new kills = player_stat[j]
+			new deths = player_stat[j+10]
 
 			if(kills == 0 && deths == 0)
-				continue;
+				continue
 			
 			/* build query and insert into database */
 			Format(query, sizeof(query), 
-				"INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES ('%s:%d','%s',%d,%d,%d) \
-				ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d;",
+				"INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES (%d.%d,%d,%d,%d,%d) \
+				ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d",
 				steam_id,role,steam_id,role,kills,deths,kills,deths);
-			SQL_TQuery(db,T_query,query,0);
+			SQL_TQuery( db,T_query,query,0 )
 		}
 	}
 }
+public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
+	printTErr(hndle, error );
 
-
-
-/* REGISTERED ACTION COMMANDS */
-
-/*
-	gets player rank from trueskill
-	database implementation
-*/
-public Action:playRank(client, args){
-	decl String:steamID[sID_size];
-	steamID = getSteamID( client );
-
-	decl String:query[QUERY_SIZE];
-	Format(query,sizeof(query),
-		"select count(*) rank, 30*my.rank + 1500 from players my left join players others \
-		on others.rank >= my.rank where my.SteamID = '%s';", steamID);
-
-	SQL_TQuery(db, rank_query, query, GetClientUserId(client) );
-	
-	return Plugin_Handled;
+	if(data != 0){
+		//post to url
+	}
 }
 
+
+
+/*
+
+	HANDLES WHEN PLAYER SAY !RANK
+
+*/
+public Action playRank(client, args){
+	int steamID = getSteamID( client )
+
+	char query[QUERY_SIZE]
+	Format( query,sizeof(query),
+		"select count(*) rank, 30*my.rank + 1500 from players my left join players others \
+		on others.rank >= my.rank where my.SteamID = %d", steamID)
+
+	SQL_TQuery(db, rank_query, query, GetClientUserId(client) )
+	
+	return Plugin_Handled
+}
 public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
-	new client = GetClientOfUserId(data);
-	new rank = 0; new Float:sigma = 100.0;
-	decl String:name[MAX_NAME_LENGTH];
+	int client = GetClientOfUserId(data)
+	int rank = 0; float sigma = 100.0
+	char name[MAX_NAME_LENGTH]
 
 	if(!IsClientInGame(client)){
-		return;
+		return
 	}
 	if(hndl == INVALID_HANDLE){
-		printTErr(hndl,error);
+		printTErr(hndl,error)
 	}
 	else{
 		while(SQL_FetchRow(hndl)){
-			rank = SQL_FetchInt(hndl,0); 
-			sigma = SQL_FetchFloat(hndl,1);
+			rank = SQL_FetchInt(hndl,0)
+			sigma = SQL_FetchFloat(hndl,1)
 		}
 
 		if(rank <= GetConVarInt(sm_minGlobal) && sigma > 0 ){
-			GetClientName(client,name,sizeof(name));
+			GetClientName(client,name,sizeof(name))
 			CPrintToChatAll("Player: {green}%s {normal}Rank: {green}%d {normal}with {green}%.0f {normal}Elo",
-				name,rank,sigma);
+				name,rank,sigma)
 		}
 		else{
-			CPrintToChat(client, "Rank {green}#%d {normal} with {red}%.0f {normal}Elo", rank,sigma);
+			CPrintToChat(client, "Rank {green}#%d {normal} with {red}%.0f {normal}Elo", rank,sigma)
 		}
 	}
 }
 
-/* UTILITY COMMANDS */
 
+/*
+	
+	HANDLES UPDATE TIME STUFF
+
+*/
 public Action:UpdateTimes(Handle:timer,any:client){
 	/* ensure tracking game */
 	if(!track_game || !IsClientConnected(client))
-		return Plugin_Stop;
+		return Plugin_Stop
 
 	if(!IsClientInGame(client))
-		return Plugin_Stop;
+		return Plugin_Stop
 
 	/* get player id in array */
-	new player = getPlayerID(client);
+	int player = getPlayerID(client)
 
 	/* get the required data array information */
-	decl Float:player_time[2];
+	float player_time[2];
 	GetArrayArray(players_times,player,player_time,sizeof(player_time)); 
 
 	/* determine which team counter to increment */
 	switch (GetClientTeam(client)){
 		case (_:TFTeam_Red): {
-			player_time[0] = player_time[0] + INTERVAL;
+			player_time[0] = player_time[0] + INTERVAL
 		}
 
 		case (_:TFTeam_Blue): {
-			player_time[1] = player_time[1] + INTERVAL;
+			player_time[1] = player_time[1] + INTERVAL
 		}
 	}
 	/* store array back into adt */
@@ -360,19 +352,6 @@ public Action:UpdateTimes(Handle:timer,any:client){
 
 	return Plugin_Continue;
 }
-
-/* Return playerID given client index */
-getPlayerID(client){
-	return FindStringInArray( players,getSteamID( client ) );
-}
-
-/* return players steamID */
-String:getSteamID(client){
-	decl String:steam_id[sID_size];
-	GetClientAuthString(client,steam_id,sizeof(steam_id),true);
-	return steam_id; 
-}
-
 
 /* prints an error given handle and error string */
 printTErr(Handle:hndle,const String:error[]){
@@ -383,36 +362,17 @@ printTErr(Handle:hndle,const String:error[]){
 	return 1;
 }
 
-/* typical threaded query prototype */
-public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
-	printTErr(hndle, error );
 
-	if(data == 1){
-		connectSocket();
-	}
+/*
+
+	PlayerID / SteamID Functions
+
+*/
+int getSteamID( client ){
+	char steam_id[STEAMID]
+	GetClientAuthId( client, AuthIdType:steam64 , steam_id, STEAMID )
+	return StringToInt( steam_id )
 }
-
-/* socket functions for socket stuff */
-public connectSocket(){
-	socket = SocketCreate(SOCKET_TCP,OnSocketError);
-	decl String:sock_serv[100];
-	GetConVarString(sm_server,sock_serv,sizeof(sock_serv));
-	SocketConnect(socket,OnSockCon,OnSockRec,OnSockDis,sock_serv,GetConVarInt(sm_port));
+int getPlayerID( client ){
+	return FindValueInArray( players, getSteamID( client ) )
 }
-
-public OnSocketError(Handle:sock, const errorType, const errorNum,any:hFile){
-	LogError("TrueSkill - Socket Error %d (errno %d)",errorType,errorNum);
-}
-public OnSockDis(Handle:sock,any:hFile){CloseHandle(sock);}
-public OnSockRec(Handle:sock,String:data[],const d,any:f){}
-public OnSockCon(Handle:sock,any:f){
-	if(gameNumber == 0){
-		return;
-	}
-
-	decl String:gNum[10]; 
-	Format(gNum,sizeof(gNum),"%d",gameNumber);
-	SocketSend(sock,gNum);
-	gameNumber = 0;
-}
-
