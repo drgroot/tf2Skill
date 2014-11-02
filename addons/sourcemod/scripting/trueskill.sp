@@ -125,9 +125,9 @@ public Event_pDeath( Handle event, const char name[], bool dontBroadcast){
 */
 public Event_pDisconnect(Handle event, const char name[], bool dontBroadcast){
 	if(!track_game)
-		return;
+		return
 
-	client_count--;
+	client_count--
 }
 
 /*
