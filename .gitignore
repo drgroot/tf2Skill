@@ -1,3 +1,5 @@
 config.file
 *.swp
 .DS_Store
+spcomp
+addons/sourcemod/scripting/include/*
