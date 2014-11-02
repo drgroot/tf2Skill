@@ -2,13 +2,9 @@
 
 TRUESKILL RANKING SYSTEM
 
-A TF2 adapted implementation of the ever popular
-trueskill ranking system.
+A TF2 adapted implementation of the ever popular trueskill ranking system.
 
 Author: Yusuf Ali
-
-requires:
-	socket - interact with python trueskill server
 
 */
 
@@ -20,7 +16,7 @@ requires:
 #include <steamtools>
 #include <morecolors>
 
-#define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
+#define UPDATE_URL 	"http://playtf2.com/mng_playtf2/addons/sourcemod/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
 #define VERSION 	"3.0"
