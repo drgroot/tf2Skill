@@ -3,3 +3,4 @@ config.file
 .DS_Store
 spcomp
 addons/sourcemod/scripting/include/*
+trueskill.log
