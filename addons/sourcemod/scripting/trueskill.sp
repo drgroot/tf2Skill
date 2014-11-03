@@ -59,7 +59,7 @@ public OnPluginStart(){
 	/* define convars */
 	CreateConVar("sm_trueskill_version",VERSION,"public CVar shows the plugin version",FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_REPLICATED)
 	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking", FCVAR_NOTIFY)
-	sm_url = CreateConVar("sm_trueskill_url","http://server/trueskill.php","url to trueskill", FCVAR_PROTECTED)
+	sm_url = CreateConVar("sm_trueskill_url","http://server.com/trueskill.php","url to trueskill php file", FCVAR_PROTECTED)
 	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off", FCVAR_NOTIFY)
 
 	/* bind methods to game events */
