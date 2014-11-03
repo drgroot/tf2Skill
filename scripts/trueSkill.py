@@ -70,22 +70,20 @@ def updatePlayerInfo(team_ls,steam_ls,conn):
 ###
 # MAIN METHOD
 ###
-
-if !hasattr(args,'group'):
+if args.group is None:
 	exit()
 
-cur = conn.cursor();
 gameNumber = int(args.group)
 logging.info("TrueSkill Calculate group: %d" % gameNumber)
 
 # open mysql connection
-conn = pymysql.connect(host=host,port=3306,
-user=user,passwd=passwd,db=datb);
+conn = pymysql.connect(host=host,port=3306, user=user,passwd=passwd,db=datb);
+cur = conn.cursor();
 		
 # start true skill stuff
 team_blu = []; team_red = []; steam_blu = [];
-		time_blu = []; time_red = []; steam_red = [];
-		result = 0
+time_blu = []; time_red = []; steam_red = [];
+result = 0
 		
 # load stuff from temp table
 try:
@@ -114,7 +112,7 @@ for player in cur:
 # ensure minimum people are playing
 if( len(team_red) + len(team_blu) ) < min_clients:
 	logging.info('\t\tGroup %d was filtered' % gameNumber)
-	continue
+	exit()
 
 # apply trueskill calculation
 if result == 3:
