@@ -41,8 +41,6 @@ Download the .smx file and save to the plugins directory into your sourcemod plu
    }
 ```
 
-**Daemon**: Similarly, on the server running the python daemon, edit `config.file.sample` and then rename it to `config.file`
-
 ##Database Setup
 
 import `trueSkill.sql` into your MySQL database
