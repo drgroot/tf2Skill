@@ -5,6 +5,7 @@ import pymysql
 import ConfigParser
 import os
 import logging
+import argparse
 
 # determine where the config file is stored 
 # on the local hard disk
@@ -28,6 +29,11 @@ except:
 logging.info('Finished Reading Configuration File')
 
 env = skill.TrueSkill();
+
+# argument parsing
+parser = argparse.ArgumentParser()
+parser.add_argument('--group',type=int,help="Group to Calculate")
+args = parser.parse_args()
 
 # loads old player information
 # return mu, sigma
@@ -64,8 +70,12 @@ def updatePlayerInfo(team_ls,steam_ls,conn):
 ###
 # MAIN METHOD
 ###
+
+if !hasattr(args,'group'):
+	exit()
+
 cur = conn.cursor();
-gameNumber = int(gameNumber)
+gameNumber = int(args.group)
 logging.info("TrueSkill Calculate group: %d" % gameNumber)
 
 # open mysql connection
