@@ -30,7 +30,6 @@ Author: Yusuf Ali
 #define STEAMID		20
 #define QUERY_SIZE   512
 #define INTERVAL	0.15
-#define steam64 AuthId_SteamID64
 
 Handle db				// database handle
 Handle players_stats	// player k:d storage variable
@@ -269,14 +268,32 @@ public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
 		}
 	}
 }
+
+
+/*
+	
+	HANDLES CURL TO REMOTE WHEN NEEDED
+
+*/
 public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
 	printTErr(hndle, error );
 
 	if(data != 0){
-		//post to url
+		char query[QUERY_SIZE]
+		char url[100]; GetConVarString( sm_url, url, sizeof(url) )
+
+		Format(	query,sizeof( query ),"%s?group=%d", url, data	)
+		HTTPRequestHandle send = Steam_CreateHTTPRequest( HTTPMethod_GET, query )
+		Steam_SendHTTPRequest( send, onComplete )
 	}
 }
+public onComplete( HTTPRequestHandle req, bool success, HTTPStatusCode status ){
+	if( !success || status != HTTPStatusCode_OK ){
+		LogError( "TrueSkill -  post failed" )
+	}
 
+	Steam_ReleaseHTTPRequest( req )
+}
 
 
 /*
@@ -359,7 +376,6 @@ public Action UpdateTimes( Handle timer, any client ){
 
 	return Plugin_Continue
 }
-
 /* prints an error given handle and error string */
 printTErr( Handle hndle, const char error[] ){
 	if( hndle == null ){
@@ -377,7 +393,7 @@ printTErr( Handle hndle, const char error[] ){
 */
 char[] getSteamID( client ){
 	char steam_id[STEAMID]
-	GetClientAuthId( client, AuthIdType:steam64 , steam_id, STEAMID )
+	GetClientAuthId( client, AuthIdType:AuthId_SteamID64 , steam_id, STEAMID )
 	return steam_id
 }
 int getPlayerID( client ){
