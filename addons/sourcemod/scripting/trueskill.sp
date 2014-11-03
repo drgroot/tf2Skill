@@ -242,12 +242,15 @@ public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
 		GetArrayString( players,i,steam_id, STEAMID );
 
-		float blue = player_time[1]
-		float red = player_time[0]
+		float blu = player_time[1]/gameDuration
+		float red = player_time[0]/gameDuration
+
+		blu = (blu > 1.0)? 1.0 : blu
+		red = (red > 1.0)? 1.0 : red
 	
 		/* insert data into database */
 		Format( query,sizeof(query), INTOTEMP , 
-			steam_id, blue/gameDuration, red/gameDuration, result, random )
+			steam_id, blu , red , result, random )
 		SQL_TQuery( db,T_query, query, last * random )
 
 		/* loop through role stats and store into mysql */
