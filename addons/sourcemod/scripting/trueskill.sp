@@ -7,9 +7,6 @@ trueskill ranking system.
 
 Author: Yusuf Ali
 
-requires:
-	socket - interact with python trueskill server
-
 */
 /*
     YusufAli's TrueSkill Ranking System
@@ -33,13 +30,13 @@ requires:
 #include <dbi>
 #include <tf2_stocks>
 #include <updater>
-#include <socket>
+#include <steamtools>
 #include <morecolors>
 
-#define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
+#define UPDATE_URL 	"http://playtf2.com/mng_playtf2/addons/sourcemod/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.17"
+#define VERSION 	"2.20"
 #define URL 		"https://github.com/yusuf-a/tf2Skill"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -49,16 +46,14 @@ new Handle:db;
 new Handle:players_stats;
 new Handle:players_times;
 new Handle:players;
-new Handle:socket;
+
 new game_start = 0;
 new track_game = 0;
 new client_count = 0;
-new gameNumber = 0;
 
 /* define convars */
 new Handle:sm_minClients = INVALID_HANDLE;
-new Handle:sm_server = INVALID_HANDLE;
-new Handle:sm_port = INVALID_HANDLE;
+new Handle:sm_url = INVALID_HANDLE;
 new Handle:sm_minGlobal = INVALID_HANDLE;
 
 /* delcare plublic variable information */
@@ -77,8 +72,7 @@ public OnPluginStart(){
 	/* define convars */
 	CreateConVar("sm_trueskill_version",VERSION,"public CVar shows the plugin version",FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_REPLICATED);
 	sm_minClients = CreateConVar("sm_trueskill_minClients","16","Minimum clients to track ranking", FCVAR_NOTIFY);
-	sm_server = CreateConVar("sm_trueskill_server","dev.yusufali.ca","Server ip with python script", FCVAR_PROTECTED);
-	sm_port = CreateConVar("sm_trueskill_port","5000","Port to interact with python script", FCVAR_PROTECTED);
+	sm_url = CreateConVar("sm_trueskill_url","http://server.com/trueskill.php","url to trueskill php file", FCVAR_PROTECTED);
 	sm_minGlobal = CreateConVar("sm_trueskill_global","50","Minimum rank for global display, 0 for off", FCVAR_NOTIFY);
 
 	/* bind methods to game events */
@@ -264,13 +258,14 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	new result = GetEventInt(event,"team");
 	new random = GetRandomInt(0,400);
 	new Float:gameDuration = float(GetTime() - game_start);
-	gameNumber = random;
 
 	/* ensure that the game was not a farm fest */
 	if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) 
 		return;
 
 	for(new i=0;i<GetArraySize(players);i++){
+		new last = (i == GetArraySize(players) -1 );
+
 		/* store player data into buffers */
 		GetArrayArray( players_stats,i,player_stat,sizeof(player_stat) );
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
@@ -282,7 +277,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 		/* insert data into database */
 		Format(query,sizeof(query),"INSERT INTO `temp` (steamid,time_blue,time_red,result,random) \
 		 VALUES('%s',%f,%f,%d,%d);", steam_id,blue/gameDuration, red/gameDuration,result,random);
-		SQL_TQuery(db,T_query,query,i == (GetArraySize(players) - 1));
+		SQL_TQuery(db,T_query,query, last * random);
 
 		/* loop through role stats and store into mysql */
 		for(new j=0; j<10; j++){
@@ -412,33 +407,20 @@ printTErr(Handle:hndle,const String:error[]){
 public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
 	printTErr(hndle, error );
 
-	if(data == 1){
-		connectSocket();
+	if(data != 0){
+		/* send get request to remote url */
+		decl String:query[QUERY_SIZE];
+		decl String:url[100]; GetConVarString( sm_url, url, sizeof(url) );
+		
+		Format( query, sizeof(query), "%s?group=%d", url, data);
+		Steam_SendHTTPRequest( Steam_CreateHTTPRequest( HTTPMethod_GET, query ) , onComplete )
 	}
 }
-
-/* socket functions for socket stuff */
-public connectSocket(){
-	socket = SocketCreate(SOCKET_TCP,OnSocketError);
-	decl String:sock_serv[100];
-	GetConVarString(sm_server,sock_serv,sizeof(sock_serv));
-	SocketConnect(socket,OnSockCon,OnSockRec,OnSockDis,sock_serv,GetConVarInt(sm_port));
-}
-
-public OnSocketError(Handle:sock, const errorType, const errorNum,any:hFile){
-	LogError("TrueSkill - Socket Error %d (errno %d)",errorType,errorNum);
-}
-public OnSockDis(Handle:sock,any:hFile){CloseHandle(sock);}
-public OnSockRec(Handle:sock,String:data[],const d,any:f){}
-public OnSockCon(Handle:sock,any:f){
-	if(gameNumber == 0){
-		return;
+public onComplete( HTTPRequestHandle:req, bool:success, HTTPStatusCode:status ){
+	if( !success || status != HTTPStatusCode_OK ){
+		LogError( "TrueSkill -  post to php file failed" )
 	}
-
-	decl String:gNum[10]; 
-	Format(gNum,sizeof(gNum),"%d",gameNumber);
-	SocketSend(sock,gNum);
-	gameNumber = 0;
+	Steam_ReleaseHTTPRequest( req )
 }
 
 
