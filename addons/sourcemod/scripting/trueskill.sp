@@ -47,7 +47,7 @@ new Handle:players_stats;
 new Handle:players_times;
 new Handle:players;
 
-new game_start = 0;
+new Float:gameDuration = 0.0;
 new track_game = 0;
 new client_count = 0;
 
@@ -206,7 +206,8 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 */
 public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	/* restart required variables */
-	game_start = GetTime(); client_count = 0;
+	gameDuration = 0.0 
+	client_count = 0;
 	ClearArray(players); ClearArray(players_times);
 	ClearArray(players_stats); 
 
@@ -228,6 +229,7 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 			CreateTimer(INTERVAL, UpdateTimes,i,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
+	CreateTimer(INTERVAL, gameTime, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
 
 	// determine if to track the game or not
 	track_game  = (client_count >= GetConVarInt(sm_minClients));
@@ -236,6 +238,12 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	if( db == INVALID_HANDLE )
 		track_game = 0;
 }
+public Action:UpdateTimes(Handle:timer,any:client){
+	if(!track_game)
+		return Plugin_Stop;
+	gameDuration += INTERVAL;
+}
+
 
 /*
 	- finalize client data, playing time, teams etc
@@ -257,7 +265,6 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 	/* declare useful comparison */
 	new result = GetEventInt(event,"team");
 	new random = GetRandomInt(0,400);
-	new Float:gameDuration = float(GetTime() - game_start);
 
 	/* ensure that the game was not a farm fest */
 	if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) 
