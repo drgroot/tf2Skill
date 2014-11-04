@@ -193,8 +193,9 @@ public Event_pTeam( Handle event, const char name[], bool dontBroadcast){
 public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 	/* restart required variables */
 	game_start = GetTime(); 
-	ClearArray(players); ClearArray(players_times)
-	ClearArray(players_stats)
+	players_stats = CreateArray( 20,0 )
+	players_times = CreateArray( 2,0 )
+	players = CreateArray( STEAMID,0 )
 	int client_count = 0
 
 	char steam_id[STEAMID]
