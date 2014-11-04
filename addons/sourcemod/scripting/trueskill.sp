@@ -39,7 +39,7 @@ Author: Yusuf Ali
 #include <steamtools>
 #include <morecolors>
 
-#define UPDATE_URL 	"http://playtf2.com/mng_playtf2/addons/sourcemod/updatefile.txt"
+#define UPDATE_URL 	"http://playtf2.com/tf2Skill/addons/sourcemod/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
 #define VERSION 	"3.0"
@@ -48,12 +48,12 @@ Author: Yusuf Ali
 #define QUERY_SIZE   512
 #define INTERVAL	0.15
 
-Handle db				// database handle
-Handle players_stats	// player k:d storage variable
-Handle players_times	// player time storage variable
-Handle players			// player ids variable		
-game_start = 0			// time of round start
-track_game = 0			// track game or not
+Handle db					// database handle
+Handle players_stats		// player k:d storage variable
+Handle players_times		// player time storage variable
+Handle players				// player ids variable		
+float game_start = 0.0	// time of round start
+int track_game = 0		// track game or not
 
 /* define convars */
 Handle sm_minClients = null
