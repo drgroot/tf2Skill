@@ -238,10 +238,11 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 	if( db == INVALID_HANDLE )
 		track_game = 0;
 }
-public Action:UpdateTimes(Handle:timer,any:client){
+public Action:gameTime(Handle:timer,any:client){
 	if(!track_game)
 		return Plugin_Stop;
 	gameDuration += INTERVAL;
+	return Plugin_Continue;
 }
 
 
