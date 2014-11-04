@@ -182,7 +182,7 @@ public Event_pTeam( Handle event, const char name[], bool dontBroadcast){
 		}
 
 		/* create timer */
-		CreateTimer( INTERVAL,UpdateTimes,client,TIMER_REPEAT );
+		CreateTimer( INTERVAL,UpdateTimes,client,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
 	}
 }
 
@@ -193,9 +193,8 @@ public Event_pTeam( Handle event, const char name[], bool dontBroadcast){
 public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 	/* restart required variables */
 	game_start = GetTime(); 
-	players_stats = CreateArray( 20,0 )
-	players_times = CreateArray( 2,0 )
-	players = CreateArray( STEAMID,0 )
+	ClearArray(players); ClearArray(players_times)
+	ClearArray(players_stats)
 	int client_count = 0
 
 	char steam_id[STEAMID]
@@ -213,7 +212,7 @@ public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 											0,0,0,0,0,0,0,0,0,0} )
 
 			/* create timer */
-			CreateTimer( INTERVAL, UpdateTimes,i,TIMER_REPEAT )
+			CreateTimer( INTERVAL, UpdateTimes,i,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE )
 		}
 	}
 
