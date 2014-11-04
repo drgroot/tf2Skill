@@ -1,0 +1,5 @@
+# auto generated gitignore file for sourcemod environment
+spcomp
+addons/sourcemod/scripting/include/*
+scripts/config.file
+scripts/trueskill.log
