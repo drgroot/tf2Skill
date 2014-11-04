@@ -48,12 +48,12 @@ Author: Yusuf Ali
 #define QUERY_SIZE   512
 #define INTERVAL	0.15
 
-Handle db					// database handle
-Handle players_stats		// player k:d storage variable
-Handle players_times		// player time storage variable
-Handle players				// player ids variable		
-float game_start = 0.0	// time of round start
-int track_game = 0		// track game or not
+Handle db						// database handle
+Handle players_stats			// player k:d storage variable
+Handle players_times			// player time storage variable
+Handle players					// player ids variable		
+float gameDuration = 0.0	// time of round start
+int track_game = 0			// track game or not
 
 /* define convars */
 Handle sm_minClients = null
@@ -188,7 +188,7 @@ public Event_pTeam( Handle event, const char name[], bool dontBroadcast){
 */
 public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 	/* restart required variables */
-	game_start = GetTime(); 
+	gameDuration = 0.0
 	players_stats = CreateArray( 20,0 )
 	players_times = CreateArray( 2,0 )
 	players = CreateArray( STEAMID,0 )
@@ -212,6 +212,7 @@ public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 			CreateTimer( INTERVAL, UpdateTimes,i,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE )
 		}
 	}
+	CreateTimer( INTERVAL, gameTime, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE )
 
 	/* determine if to track the game or not */
 	track_game  = (	client_count >= GetConVarInt(sm_minClients)	)
@@ -219,6 +220,12 @@ public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
 	/* ensure database is connected */
 	if( db == null )
 		track_game = 0
+}
+public Action gameTime( Handle timer, any data ){
+	if(!track_game)
+		return Plugin_Stop
+	gameDuration += INTERVAL
+	return Plugin_Continue
 }
 
 /*
@@ -241,7 +248,6 @@ public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
 	/* declare useful comparison */
 	int result = GetEventInt( event,"team" )
 	int random = GetRandomInt( 0,400 )
-	float gameDuration = float( GetTime() - game_start )
 
 	/* ensure that the game was not a farm fest */
 	if( GetArraySize(players) < 24 ) 
