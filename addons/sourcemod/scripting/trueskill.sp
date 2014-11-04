@@ -413,6 +413,7 @@ public T_query(Handle:owner,Handle:hndle,const String:error[],any:data){
 		decl String:url[100]; GetConVarString( sm_url, url, sizeof(url) );
 		
 		Format( query, sizeof(query), "%s?group=%d", url, data);
+		PrintToServer("%s", query );
 		Steam_SendHTTPRequest( Steam_CreateHTTPRequest( HTTPMethod_GET, query ) , onComplete )
 	}
 }
