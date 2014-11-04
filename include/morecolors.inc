@@ -28,8 +28,8 @@ new CTeamColors[][] = {{0xCCCCCC, 0x4D7942, 0xFF4040}}; // Multi-dimensional arr
 * On error/Errors: If the client is not connected an error will be thrown.
 */
 stock CPrintToChat(client, const String:message[], any:...) {
-CCheckTrie();
-if(client <= 0 || client > MaxClients) {
+	CCheckTrie();
+	if(client <= 0 || client > MaxClients) {
 		ThrowError("Invalid client index %i", client);
 	}
 	if(!IsClientInGame(client)) {

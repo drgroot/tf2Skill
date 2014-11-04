@@ -39,7 +39,7 @@ requires:
 #define UPDATE_URL 	"http://playtf2.com/tf2Skill/updatefile.txt"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.16"
+#define VERSION 	"2.17"
 #define URL 		"https://github.com/yusuf-a/tf2Skill"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -137,7 +137,7 @@ public Event_pDeath(Handle:event, const String:name[], bool:dontBroadcast){
 
 	/* increment data */
 	atker[killer_role]++;
-	victm[victim_role + 10]++;
+	victm[victim_role + TFClassType:10]++;
 
 	/* store into <adt_array> player_stats */
 	SetArrayArray( players_stats, killer, atker, sizeof(atker) );
@@ -202,7 +202,7 @@ public Event_pTeam(Handle:event, const String:name[], bool:dontBroadcast){
 		}
 
 		/* create timer */
-		CreateTimer(INTERVAL,UpdateTimes,client,TIMER_REPEAT);
+		CreateTimer(INTERVAL,UpdateTimes,client,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
@@ -231,7 +231,7 @@ public Event_rStart(Handle:event, const String:name[], bool:dontBroadcast){
 											0,0,0,0,0,0,0,0,0,0});
 
 			/* create timer */
-			CreateTimer(INTERVAL, UpdateTimes,i,TIMER_REPEAT);
+			CreateTimer(INTERVAL, UpdateTimes,i,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 
