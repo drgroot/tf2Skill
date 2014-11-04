@@ -85,10 +85,6 @@ public OnPluginStart(){
 	HookEvent( "teamplay_round_win", Event_rEnd )
 	HookEvent( "player_death", Event_pDeath )
 	RegConsoleCmd( "sm_rank", playRank )
-    
-	players_stats = CreateArray( 20,0 )
-	players_times = CreateArray( 2,0 )
-	players = CreateArray( STEAMID,0 )
 }
 public OnLibraryAdded(	const char name[]	){
 	 if(	StrEqual( name, "updater" )	){
