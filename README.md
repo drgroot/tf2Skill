@@ -6,7 +6,7 @@ TF2 Skill is an adaptation of [Microsoft's TrueSkill][5] ranking system into sou
 A example population distribution as a result of using TrueSkill can be viewed [here](http://www.playtf2.com/plot/40)
 
 ##Dependencies/Requirements
-* [SourceSockets Extension][3]
+* [SteamTools Extension][3]
 * [Sourcemod Updater Plugin][4]
 * MySQL database
 * Python >= 2.7
@@ -23,8 +23,7 @@ A example population distribution as a result of using TrueSkill can be viewed [
 ```javascript
 sm_trueskill_version // public CVar shows the plugin version
 sm_trueskill_minClients 16    //minimum number of clients required to track ranking
-sm_trueskill_server "dev.yusufali.ca" //ip or hostname of server running python script
-sm_trueskill_port "5000" //socket port to interact with the python daemon
+sm_trueskill_url "http://server.com/trueskill.php" //url to trueskill php file
 sm_trueskill_global "50" //minimum rank to display globally to the server, 0 for off
 ```
 
@@ -42,49 +41,19 @@ Download the .smx file and save to the plugins directory into your sourcemod plu
    }
 ```
 
-**Daemon**: Similarly, on the server running the python daemon, edit `config.file.sample` and then rename it to `config.file`
+##Database Setup
 
-**Database**: import `trueSkill.sql` into your MySQL database
+import `trueSkill.sql` into your MySQL database
 
-##Running The Daemon (Linux)
-To begin applying TrueSkill calculations, simply run the python script in a screen session or using an init script. Below is a sample to start the daemon
-
-```bash
-screen
-python trueSkill.py
-```
-
-For linux systems, an init script has been supplied as `trueSkill`. This ofcourse needs to be modified to your system setup (user, path). To use the init script on debian based systems:
-
-```bash
-ln -s /path/to/trueSkill_init /etc/init.d/trueSkill  # make symbolic link
-update-rc.d /etc/init.d/trueSkill defaults  # add to startup parameters
-/etc/init.d/trueSkill start # starts the trueskill service
-/etc/init.d/trueSkill status # ensure its running
-```
-
-Rarely, the daemon may shutdown on its own. A non-daemonized script has also been provided to run to calculate rankings for events that were not accounted for.
-
-```bash
-python trueSkill_noDaemon.py
-```
-**To have OCD about it runing** run this script daily (using a crontab or something) to ensure it runs daily. This is overkill, and I highly recommend against this practice. 
-
-##Running the Daemon (Windows)
-Windows users can run the daemon as they normally will run any python script
-
-```
-dir C:\path\to\daemon\files\
-python trueSkill.py  
-//or trueskill_noDaemon.py if u want to run that (read linux notes on what its for)
-```
-
-For those very rare occasions where the daemon shutsdown, you can add it as a windows service
+##Scripts Setup
+Place the files in the scripts folder as set in the `sm_trueskill_url` CVar. 
+Edit `config.file.sample` and then rename it to `config.file`
+To test that it works, browse to the url specified in the `sm_trueskill_url` CVar. If the page doesn't show and error, then it has been successfully installed.
 
 ##Website Interface
 Example Website Interface: [PlayTF2][6]
 
-There are no official website interfaces that I have designed for this ranking system (because it is a trivial task). Later in the future I plan to design an official website interface for this plugin.
+There are no official website interfaces that I have designed for this ranking system. Later in the future I plan to design an official website interface for this plugin.
 
 However, because I understand that most people want their own website interface, the code from [PlayTF2][6] website should be used as a reference. See this [repository](https://github.com/yusuf-a/hlstatsx) for examples.
 
@@ -104,7 +73,7 @@ All issues/bugs please [report here](https://github.com/yusuf-a/tf2Skill/issues)
 
 [1]: http://trueskill.org/
 [2]: https://pypi.python.org/pypi/PyMySQL
-[3]: https://forums.alliedmods.net/showthread.php?t=67640
+[3]: https://forums.alliedmods.net/showthread.php?t=129763
 [4]: https://forums.alliedmods.net/showthread.php?t=169095
 [5]: http://research.microsoft.com/en-us/projects/trueskill/
 [6]: http://playtf2.com/stats/
