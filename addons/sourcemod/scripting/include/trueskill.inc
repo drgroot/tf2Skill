@@ -34,7 +34,7 @@
 	@param callback		Callback function when it is complete
 	@return 			void
 */
-native getPlayerElo( userid, &callback )
+native trueskill_getElo( userid, &callback )
 
 /*
 	Returns a handle containing the Elo of all players on server
@@ -42,4 +42,4 @@ native getPlayerElo( userid, &callback )
 	@param callback 	Callback functoin when query is complete
 	@return 			void
 */
-native getAllElo( &callback )
+native trueskill_getAllElo( &callback )
