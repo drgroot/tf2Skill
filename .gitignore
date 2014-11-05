@@ -1,6 +1,6 @@
-config.file
 *.swp
 .DS_Store
 spcomp
 addons/sourcemod/scripting/include/*
-trueskill.log
+scripts/config.file
+scripts/trueskill.log
