@@ -26,12 +26,7 @@ Author: Yusuf Ali
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* MySQL Query definitions */
-#define NEWPLAYER "insert into players (steamID,name) values (%s,'%s') on duplicate key update lastConnect = now() AND name = '%s';"
-#define INTOTEMP "INSERT INTO `temp` (steamid,time_blue,time_red,result,random) VALUES(%s,%f,%f,%d,%d)"
-#define STATS "INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES (%s.%d,%s,%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d"
-#define RANK "select count(*) rank, 30*my.rank + 1500 from players my left join players others on others.rank >= my.rank where my.SteamID = %s"
-
+#include <trueskill>
 #include <sourcemod>
 #include <dbi>
 #include <tf2_stocks>
