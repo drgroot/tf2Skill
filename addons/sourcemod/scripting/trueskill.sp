@@ -86,6 +86,11 @@ public OnLibraryAdded(	const char name[]	){
 		Updater_AddPlugin( UPDATE_URL )
 	 }
 }
+public APLRes AskPluginLoad2(Handle me, bool late, char err[], err_max){
+	CreateNative( "trueskill_getAllElo", native_trueskill_getAllElo )
+	CreateNative( "trueskill_getElo", native_trueskill_getElo )
+	return APLRes_Success
+}
 
 /* METHODS FOR GAME EVENTS */
 public Event_pDeath( Handle event, const char name[], bool dontBroadcast){
@@ -414,3 +419,21 @@ char[] getSteamID( client ){
 int getPlayerID( client ){
 	return FindStringInArray( players, getSteamID( client ) )
 }
+
+
+
+
+/*
+
+	NATIVES 
+
+*/
+public native_trueskill_getElo( Handle plugin, numParams ){
+	//int userid = GetNativeCell(1)
+	//Handle callback = Handle:GetNativeCell(2)
+}
+
+public native_trueskill_getAllElo( Handle plugin, numParams ){
+	//Handle callback = Handle:GetNativeCell(1)
+}
+
