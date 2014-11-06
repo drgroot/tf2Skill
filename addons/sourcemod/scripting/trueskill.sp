@@ -429,11 +429,27 @@ int getPlayerID( client ){
 
 */
 public native_trueskill_getElo( Handle plugin, numParams ){
-	//int userid = GetNativeCell(1)
-	//Handle callback = Handle:GetNativeCell(2)
-}
+	int client = GetClientOfUserId( GetNativeCell(1) )
+	Handle callback = Handle:GetNativeCellRef(2)
 
+	if( !IsClientInGame(client) )
+		return ThrowNativeError( SP_ERROR_NATIVE, "Client not connected" )
+
+	char steamID[STEAMID]
+	steamID = getSteamID( client )
+
+	char query[QUERY_SIZE]
+	Format( query, sizeof(query), 
+	"SELECT 30*rank + 1500 as elo from players where SteamID = '%s'" , steamID )
+	SQL_TQuery( db, native_callback, query, callback )
+
+	return 1
+}
 public native_trueskill_getAllElo( Handle plugin, numParams ){
 	//Handle callback = Handle:GetNativeCell(1)
 }
 
+/* Handles the Callback given by native query */
+public native_callback( Handle o, Handle h, const char[] e, any callback){
+
+}
