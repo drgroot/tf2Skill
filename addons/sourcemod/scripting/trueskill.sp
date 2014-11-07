@@ -430,7 +430,7 @@ int getPlayerID( client ){
 */
 public native_trueskill_getElo( Handle plugin, numParams ){
 	int client = GetClientOfUserId( GetNativeCell(1) )
-	Handle callback = Handle:GetNativeCellRef(2)
+	Handle callback = Handle:GetNativeCell(2)
 
 	if( !IsClientInGame(client) )
 		return ThrowNativeError( SP_ERROR_NATIVE, "Client not connected" )
@@ -450,6 +450,7 @@ public native_trueskill_getAllElo( Handle plugin, numParams ){
 }
 
 /* Handles the Callback given by native query */
-public native_callback( Handle o, Handle h, const char[] e, any callback){
-
+public native_callback( Handle o, Handle h, const char[] e, any hndl){
+	Handle callback = Handle:hndl
+	
 }
