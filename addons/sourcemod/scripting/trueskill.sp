@@ -49,6 +49,7 @@ Handle players_times			// player time storage variable
 Handle players					// player ids variable		
 float gameDuration = 0.0	// time of round start
 int track_game = 0			// track game or not
+Handle g_playerElo = null 	// player Elo foward
 
 /* define convars */
 Handle sm_minClients = null
@@ -80,6 +81,7 @@ public OnPluginStart(){
 	HookEvent( "teamplay_round_win", Event_rEnd )
 	HookEvent( "player_death", Event_pDeath )
 	RegConsoleCmd( "sm_rank", playRank )
+	g_playerElo = CreateForward( ET_Event, Param_Cell, Param_Cell )
 }
 public OnLibraryAdded(	const char name[]	){
 	 if(	StrEqual( name, "updater" )	){
@@ -87,7 +89,6 @@ public OnLibraryAdded(	const char name[]	){
 	 }
 }
 public APLRes AskPluginLoad2(Handle me, bool late, char err[], err_max){
-	CreateNative( "trueskill_getAllElo", native_trueskill_getAllElo )
 	CreateNative( "trueskill_getElo", native_trueskill_getElo )
 	return APLRes_Success
 }
@@ -429,9 +430,9 @@ int getPlayerID( client ){
 
 */
 public native_trueskill_getElo( Handle plugin, numParams ){
-	int client = GetClientOfUserId( GetNativeCell(1) )
-	Handle callback = Handle:GetNativeCell(2)
+	int user = GetNativeCell(1)
 
+	int client = GetClientOfUserId( user )
 	if( !IsClientInGame(client) )
 		return ThrowNativeError( SP_ERROR_NATIVE, "Client not connected" )
 
@@ -440,21 +441,22 @@ public native_trueskill_getElo( Handle plugin, numParams ){
 
 	char query[QUERY_SIZE]
 	Format( query, sizeof(query), 
-	"SELECT 30*rank + 1500 as elo from players where SteamID = '%s'" , steamID )
-	SQL_TQuery( db, native_callback, query, callback )
+	"SELECT (30*rank + 1500) as elo from players where SteamID = '%s'" , user, steamID )
+	SQL_TQuery( db, native_callback, query, user )
+
+	AddToForward( g_playerElo, plugin, GetNativeCell(2) )
 
 	return 1
 }
-public native_trueskill_getAllElo( Handle plugin, numParams ){
-	//Handle callback = Handle:GetNativeCell(1)
-}
-
-/* Handles the Callback given by native query */
-public native_callback( Handle o, Handle h, const char[] e, any hndl){
-	Handle callback = Handle:hndl
+public native_callback( Handle o, Handle h, const char[] e, any user){
+	float elo = 0.0
 	
-	if( SQL_GetRowCount(h) > 0){
-		// create player data array
-		
+	while(	SQL_FetchRow( h )	){
+		elo = SQL_FetchFloat( h, 0 )
 	}
+
+	Call_StartForward( g_playerElo )
+	Call_PushCell( user )
+	Call_PushCell( elo )
+	Call_Finish()
 }
