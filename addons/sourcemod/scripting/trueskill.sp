@@ -413,7 +413,7 @@ printTErr( Handle hndle, const char error[] ){
 */
 char[] getSteamID( client ){
 	char steam_id[STEAMID]
-	GetClientAuthId( client, AuthIdType:AuthId_SteamID64 , steam_id, STEAMID )
+	GetClientAuthId( client, AuthIdType:AuthId_Steam2 , steam_id, STEAMID )
 	return steam_id
 }
 int getPlayerID( client ){
@@ -453,4 +453,8 @@ public native_trueskill_getAllElo( Handle plugin, numParams ){
 public native_callback( Handle o, Handle h, const char[] e, any hndl){
 	Handle callback = Handle:hndl
 	
+	if( SQL_GetRowCount(h) > 0){
+		// create player data array
+		
+	}
 }
