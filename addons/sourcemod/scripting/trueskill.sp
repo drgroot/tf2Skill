@@ -250,10 +250,6 @@ public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
 	int result = GetEventInt( event,"team" )
 	int random = GetRandomInt( 0,400 )
 
-	/* ensure that the game was not a farm fest */
-	if( GetArraySize(players) < 24 ) 
-		return
-
 	for(int i=0; i<GetArraySize(players); i++){
 		int last = (i == GetArraySize(players) -1)
 
