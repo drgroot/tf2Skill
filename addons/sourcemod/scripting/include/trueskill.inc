@@ -27,7 +27,7 @@
 #define STATS "INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES ('%s.%d',%'s',%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d"
 #define RANK "select count(*) rank, 30*my.rank + 1500 from players my left join players others on others.rank >= my.rank where my.SteamID = '%s'"
 
-functag OnGetEloFunc Action:public( userid, elo, champ )
+functag OnGetEloFunc Action:public( userid, float:elo, champ )
 
 /*
 	Returns the Elo of a Player given userid

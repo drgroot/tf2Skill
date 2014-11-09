@@ -81,7 +81,7 @@ public OnPluginStart(){
 	HookEvent( "teamplay_round_win", Event_rEnd )
 	HookEvent( "player_death", Event_pDeath )
 	RegConsoleCmd( "sm_rank", playRank )
-	g_playerElo = CreateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell )
+	g_playerElo = CreateForward( ET_Event, Param_Cell, Param_Float, Param_Cell )
 }
 public OnLibraryAdded(	const char name[]	){
 	 if(	StrEqual( name, "updater" )	){
@@ -437,7 +437,7 @@ public native_trueskill_getElo( Handle plugin, numParams ){
 
 	char query[QUERY_SIZE]
 	Format( query, sizeof(query), 
-	"SELECT (30*rank + 1500) as elo, %d, MAX(30*rank+1500) from players where SteamID = '%s'" , user, steamID )
+	"select 30*my.rank + 1500,%d,count(*) rank  from players my left join players others on others.rank >= my.rank where my.SteamID = '%s'" , user, steamID )
 	SQL_TQuery( db, native_callback, query, plugin )
 
 	AddToForward( g_playerElo, plugin, GetNativeCell(2) )
@@ -447,18 +447,18 @@ public native_trueskill_getElo( Handle plugin, numParams ){
 public native_callback( Handle o, Handle h, const char[] e, any plugin){
 	float elo = 0.0
 	int user = -1
-	float max = 0.0
+	int rank = 0
 	
 	while(	SQL_FetchRow( h )	){
 		elo = SQL_FetchFloat( h, 0 )
 		user = SQL_FetchInt( h, 1 )
-		max = SQL_FetchFloat( h, 2 )
+		rank = SQL_FetchInt( h, 2 )
 	}
 
 	Call_StartForward( g_playerElo )
 	Call_PushCell( user )
-	Call_PushCell( elo )
-	Call_PushCell( elo == max )
+	Call_PushFloat( elo )
+	Call_PushCell( rank == 1 )
 	Call_Finish()
 	RemoveAllFromForward( g_playerElo, plugin )
 }
