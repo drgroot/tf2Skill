@@ -441,7 +441,7 @@ public native_trueskill_getElo( Handle plugin, numParams ){
 
 	char query[QUERY_SIZE]
 	Format( query, sizeof(query), 
-	"SELECT (30*rank + 1500) as elo from players where SteamID = '%s'" , user, steamID )
+	"SELECT (30*rank + 1500) as elo from players where SteamID = '%s'" , steamID )
 	SQL_TQuery( db, native_callback, query, user )
 
 	AddToForward( g_playerElo, plugin, GetNativeCell(2) )
