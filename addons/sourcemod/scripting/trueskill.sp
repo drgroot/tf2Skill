@@ -34,7 +34,7 @@ Author: Yusuf Ali
 #include <steamtools>
 #include <morecolors>
 
-#define UPDATE_URL 	"http://playtf2.com/tf2Skill/addons/sourcemod/updatefile.txt"
+#define UPDATE_URL 	"http://dev.yusufali.ca/plugins/tf2Skill/master/"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
 #define VERSION 	"3.0"
