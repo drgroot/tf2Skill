@@ -83,18 +83,18 @@ public OnPluginStart(){
 	RegConsoleCmd( "sm_rank", playRank )
 	g_playerElo = CreateForward( ET_Event, Param_Cell, Param_Float, Param_Cell )
 }
-public OnLibraryAdded(	const char name[]	){
+public OnLibraryAdded(	const char[] name	){
 	 if(	StrEqual( name, "updater" )	){
 		Updater_AddPlugin( UPDATE_URL )
 	 }
 }
-public APLRes AskPluginLoad2(Handle me, bool late, char err[], err_max){
+public APLRes AskPluginLoad2(Handle me, bool late, char[] err, err_max){
 	CreateNative( "trueskill_getElo", native_trueskill_getElo )
 	return APLRes_Success
 }
 
 /* METHODS FOR GAME EVENTS */
-public Event_pDeath( Handle event, const char name[], bool dontBroadcast){
+public Event_pDeath( Handle event, const char[] name, bool dontBroadcast){
 	/* only if tracking game */
 	if( !track_game )
 		return
@@ -140,7 +140,11 @@ public Event_pDeath( Handle event, const char name[], bool dontBroadcast){
 	- keep tract of client playing time
 	- update client playing time
 */
-public Event_pTeam( Handle event, const char name[], bool dontBroadcast){
+public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
+	/* only if tracking game */
+	if( !track_game )
+		return
+	
 	int oTeam = GetEventInt( event,"oldteam" )
 	int client = GetClientOfUserId(	GetEventInt( event,"userid" )	)
 
@@ -187,7 +191,7 @@ public Event_pTeam( Handle event, const char name[], bool dontBroadcast){
 	- reset arrays, grab client information
 	 - structure data
 */
-public Event_rStart( Handle event, const char name[], bool dontBroadcast ){
+public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 	/* restart required variables */
 	gameDuration = 0.0
 	players_stats = CreateArray( 20,0 )
@@ -233,7 +237,7 @@ public Action gameTime( Handle timer, any data ){
 	- finalize client data, playing time, teams etc
 	 - post data to trueskill implementation
 */
-public Event_rEnd( Handle event, const char namep[], bool dontBroadcast){
+public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 	/* ensure this game is to be tracked */
 	if(!track_game)
 		return
@@ -394,7 +398,7 @@ public Action UpdateTimes( Handle timer, any client ){
 	return Plugin_Continue
 }
 /* prints an error given handle and error string */
-printTErr( Handle hndle, const char error[] ){
+printTErr( Handle hndle, const char[] error ){
 	if( hndle == null ){
 		LogError( "TrueSkill - Query Failed: %s", error )
 		return 0
