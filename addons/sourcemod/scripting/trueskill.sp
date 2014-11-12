@@ -169,10 +169,6 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 		Format(	query, sizeof(query), NEWPLAYER , steamID, playerName, playerName	)
 		SQL_TQuery(db,T_query,query,0)
 
-		/* ensure we are tracking data */
-		if( !track_game )
-			return
-
 		/* otherwise populate the arrays */
 		if(player == -1){
 		  PushArrayString( players, steamID )
