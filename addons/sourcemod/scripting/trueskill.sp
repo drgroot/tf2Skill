@@ -39,7 +39,7 @@ Author: Yusuf Ali
 #define AUTHOR 		"Yusuf Ali"
 #define VERSION 	"3.0"
 #define URL 		"https://github.com/yusuf-a/tf2Skill"
-#define STEAMID		20
+#define STEAMID		32
 #define QUERY_SIZE   512
 #define INTERVAL	0.15
 
