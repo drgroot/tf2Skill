@@ -38,15 +38,15 @@ DROP TABLE IF EXISTS `players`;
 
 CREATE TABLE `players` (
   `player_id` int(11) NOT NULL AUTO_INCREMENT,
-  `steamID` varchar(32) NOT NULL DEFAULT '',
-  `lastConnect` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `mew` decimal(11,8) NOT NULL DEFAULT '25.00000000',
-  `sigma` decimal(11,8) NOT NULL DEFAULT '8.33333333',
-  `rank` decimal(11,8) NOT NULL DEFAULT '0.00000000',
+  `steamID` varchar(20) NOT NULL DEFAULT '',
+  `lastConnect` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `mew` decimal(20,17) NOT NULL DEFAULT '25.00000000000000000',
+  `sigma` decimal(20,17) NOT NULL DEFAULT '8.33330000000000000',
+  `rank` decimal(20,15) NOT NULL DEFAULT '0.000000000000000',
   `name` text,
-  PRIMARY KEY (`player_id`),
-  UNIQUE KEY `steamID` (`steamID`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`steamID`),
+  UNIQUE KEY `player_id` (`player_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
 
 
 
