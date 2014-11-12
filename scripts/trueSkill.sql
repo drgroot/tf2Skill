@@ -20,7 +20,7 @@
 DROP TABLE IF EXISTS `player_stats`;
 
 CREATE TABLE `player_stats` (
-  `stat_id` varchar(23) NOT NULL DEFAULT '',
+  `stat_id` varchar(33) NOT NULL DEFAULT '',
   `steamID` varchar(32) NOT NULL DEFAULT '',
   `roles` int(11) NOT NULL,
   `kills` int(11) NOT NULL DEFAULT '0',
@@ -38,7 +38,7 @@ DROP TABLE IF EXISTS `players`;
 
 CREATE TABLE `players` (
   `player_id` int(11) NOT NULL AUTO_INCREMENT,
-  `steamID` varchar(20) NOT NULL DEFAULT '',
+  `steamID` varchar(32) NOT NULL DEFAULT '',
   `lastConnect` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `mew` decimal(11,8) NOT NULL DEFAULT '25.00000000',
   `sigma` decimal(11,8) NOT NULL DEFAULT '8.33333333',
@@ -56,7 +56,7 @@ CREATE TABLE `players` (
 DROP TABLE IF EXISTS `temp`;
 
 CREATE TABLE `temp` (
-  `steamid` mediumtext NOT NULL,
+  `steamid` varchar(32) NOT NULL DEFAULT '',
   `time_blue` decimal(11,10) NOT NULL,
   `time_red` decimal(11,10) NOT NULL,
   `result` int(1) NOT NULL,
