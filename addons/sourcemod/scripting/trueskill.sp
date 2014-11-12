@@ -162,7 +162,7 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 
 	/* get player name */
 	char playerName[MAX_NAME_LENGTH *2 +1]
-	GetClientName( client, playerName, sizeof( playerName )	)
+	GetClientName( client, playerName, MAX_NAME_LENGTH	)
 	SQL_EscapeString( db, playerName, playerName,sizeof( playerName )	)
 
 	/* determine if player switched teams or joined */
