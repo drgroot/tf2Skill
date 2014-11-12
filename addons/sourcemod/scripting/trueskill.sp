@@ -88,6 +88,9 @@ public OnLibraryAdded(	const char[] name	){
 		Updater_AddPlugin( UPDATE_URL )
 	 }
 }
+public Updater_OnPluginUpdated(){
+	ReloadPlugin()
+}
 public APLRes AskPluginLoad2(Handle me, bool late, char[] err, err_max){
 	CreateNative( "trueskill_getElo", native_trueskill_getElo )
 	return APLRes_Success
