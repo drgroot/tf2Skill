@@ -33,7 +33,6 @@ config = ConfigParser.ConfigParser();
 logging.basicConfig(filename='trueskill.log',level=logging.DEBUG)
 
 # read configuration file
-logging.info('Reading Configuration File')
 try:
 	config.read("%s/config.file" % current_dir)
 	host = config.get('database','host')
@@ -43,7 +42,6 @@ try:
 	min_clients = int(config.get('database','min_clients'))
 except:
 	logging.critical('Could not read configuration file')
-logging.info('Finished Reading Configuration File')
 
 env = skill.TrueSkill();
 
@@ -156,6 +154,5 @@ except:
 		
 cur.close();
 conn.close()
-logging.info('Finished Calculating group %d' % gameNumber)
 
 exit()
