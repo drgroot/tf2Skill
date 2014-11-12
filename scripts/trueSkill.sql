@@ -1,11 +1,5 @@
 # ************************************************************
-# Sequel Pro SQL dump
-# Version 4096
-#
-# http://www.sequelpro.com/
-# http://code.google.com/p/sequel-pro/
-#
-# Host: localhost (MySQL 5.5.38-0+wheezy1)
+# Host: localhost
 # Database: rankingsystem
 # Generation Time: 2014-10-08 20:34:35 +0000
 # ************************************************************
@@ -26,13 +20,13 @@
 DROP TABLE IF EXISTS `player_stats`;
 
 CREATE TABLE `player_stats` (
-  `stat_id` tinytext NOT NULL,
-  `steamID` tinytext NOT NULL,
+  `stat_id` varchar(23) NOT NULL DEFAULT '',
+  `steamID` varchar(32) NOT NULL DEFAULT '',
   `roles` int(11) NOT NULL,
   `kills` int(11) NOT NULL DEFAULT '0',
   `deaths` int(11) NOT NULL DEFAULT '0',
-  UNIQUE KEY `stat_id` (`stat_id`(100)),
-  KEY `steamID` (`steamID`(100))
+  UNIQUE KEY `stat_id` (`stat_id`),
+  KEY `steamID` (`steamID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 
@@ -44,15 +38,14 @@ DROP TABLE IF EXISTS `players`;
 
 CREATE TABLE `players` (
   `player_id` int(11) NOT NULL AUTO_INCREMENT,
-  `steamID` text NOT NULL,
-  `lastConnect` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `mew` decimal(20,17) NOT NULL DEFAULT '25.00000000000000000',
-  `sigma` decimal(20,17) NOT NULL DEFAULT '8.33330000000000000',
-  `rank` decimal(20,15) NOT NULL DEFAULT '-100.000000000000000',
+  `steamID` varchar(20) NOT NULL DEFAULT '',
+  `lastConnect` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `mew` decimal(11,8) NOT NULL DEFAULT '25.00000000',
+  `sigma` decimal(11,8) NOT NULL DEFAULT '8.33333333',
+  `rank` decimal(11,8) NOT NULL DEFAULT '0.00000000',
   `name` text,
-  `averageRank` decimal(15,10) DEFAULT '1.0000000000',
   PRIMARY KEY (`player_id`),
-  UNIQUE KEY `steamID` (`steamID`(100))
+  UNIQUE KEY `steamID` (`steamID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 
