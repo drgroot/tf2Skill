@@ -145,7 +145,8 @@ public Event_pDeath( Handle event, const char[] name, bool dontBroadcast){
 */
 public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 	int oTeam = GetEventInt( event,"oldteam" )
-	int client = GetClientOfUserId(	GetEventInt( event,"userid" )	)
+	int userid = GetEventInt( event,"userid" )
+	int client  = GetClientOfUserId( userid )
 
 	/* ensure its a legit client */
 	if(IsFakeClient(client))
@@ -183,7 +184,7 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 		}
 
 		/* create timer */
-		CreateTimer( INTERVAL,UpdateTimes,client,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
+		CreateTimer( INTERVAL, UpdateTimes, userid, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
 	}
 }
 
@@ -212,9 +213,9 @@ public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 			PushArrayArray( players_times,{0.0,0.0} )
 			PushArrayArray( players_stats,{0,0,0,0,0,0,0,0,0,0,
 											0,0,0,0,0,0,0,0,0,0} )
-
+			int userid = GetClientUserId( i )
 			/* create timer */
-			CreateTimer( INTERVAL, UpdateTimes,i,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE )
+			CreateTimer( INTERVAL, UpdateTimes, userid, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE )
 		}
 	}
 	CreateTimer( INTERVAL, gameTime, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE )
@@ -364,7 +365,9 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 	HANDLES UPDATE TIME STUFF
 
 */
-public Action UpdateTimes( Handle timer, any client ){
+public Action UpdateTimes( Handle timer, any userid ){
+	int client  = GetClientOfUserId( userid )
+
 	/* ensure tracking game */
 	if(	!track_game || !IsClientConnected(client)	)
 		return Plugin_Stop
