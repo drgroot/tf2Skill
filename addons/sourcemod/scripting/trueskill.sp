@@ -89,7 +89,9 @@ public OnLibraryAdded(	const char[] name	){
 	 }
 }
 public Updater_OnPluginUpdated(){
-	ReloadPlugin()
+	char filename[64];
+	GetPluginFilename( INVALID_HANDLE, filename, sizeof(filename) )
+	ServerCommand( "sm plugins reload %s", filename )
 }
 public APLRes AskPluginLoad2(Handle me, bool late, char[] err, err_max){
 	CreateNative( "trueskill_getElo", native_trueskill_getElo )
