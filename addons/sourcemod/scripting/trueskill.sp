@@ -37,7 +37,7 @@ Author: Yusuf Ali
 #define UPDATE_URL 	"http://dev.yusufali.ca/plugins/tf2Skill/master/"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"3.0"
+#define VERSION 	"2.0"
 #define URL 		"https://github.com/yusuf-a/tf2Skill"
 #define STEAMID		32
 #define QUERY_SIZE   512
@@ -144,10 +144,6 @@ public Event_pDeath( Handle event, const char[] name, bool dontBroadcast){
 	- update client playing time
 */
 public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
-	/* only if tracking game */
-	if( !track_game )
-		return
-	
 	int oTeam = GetEventInt( event,"oldteam" )
 	int client = GetClientOfUserId(	GetEventInt( event,"userid" )	)
 
@@ -158,7 +154,6 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 	/* get steamID */
 	char steamID[STEAMID]
 	steamID = getSteamID( client )
-	int player = getPlayerID( client )
 
 	/* get player name */
 	char playerName[MAX_NAME_LENGTH *2 +1]
@@ -171,6 +166,12 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 		char query[QUERY_SIZE]
 		Format(	query, sizeof(query), NEWPLAYER , steamID, playerName, playerName	)
 		SQL_TQuery(db,T_query,query,0)
+
+		/* only if tracking game */
+		if( !track_game )
+			return
+	
+		int player = getPlayerID( client )
 
 		/* otherwise populate the arrays */
 		if(player == -1){
