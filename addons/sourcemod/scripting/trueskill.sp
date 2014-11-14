@@ -34,7 +34,7 @@ Author: Yusuf Ali
 #include <steamtools>
 #include <morecolors>
 
-#define UPDATE_URL 	"http://dev.yusufali.ca/plugins/tf2Skill/notimers/"
+#define UPDATE_URL 	"http://dev.yusufali.ca/plugins/tf2Skill/master/"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
 #define VERSION 	"2.0"
@@ -45,7 +45,6 @@ Author: Yusuf Ali
 Handle db						// database handle
 Handle players_stats			// player k:d storage variable
 Handle players_times			// player time storage variable
-								//	time red, time blu, cur_team, start_time
 Handle players					// player ids variable		
 int roundStart					// time of round start
 int track_game = 0			// track game or not
