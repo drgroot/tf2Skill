@@ -34,7 +34,7 @@ Author: Yusuf Ali
 #include <steamtools>
 #include <morecolors>
 
-#define UPDATE_URL 	"http://dev.yusufali.ca/plugins/tf2Skill/master/"
+#define UPDATE_URL 	"http://dev.yusufali.ca/plugins/tf2Skill/notimers/"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
 #define VERSION 	"2.0"
