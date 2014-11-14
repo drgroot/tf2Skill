@@ -46,6 +46,7 @@ Author: Yusuf Ali
 Handle db						// database handle
 Handle players_stats			// player k:d storage variable
 Handle players_times			// player time storage variable
+								//	time red, time blu, start_time, cur_team
 Handle players					// player ids variable		
 int roundStart					// time of round start
 int track_game = 0			// track game or not
@@ -159,7 +160,7 @@ public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 	int client_count = 0
 
 	int new_player[4] = {0, 0, 0, 0}
-	new_player[2] = roundStart
+	new_player[3] = roundStart
 
 	char steam_id[STEAMID]
 
@@ -171,7 +172,7 @@ public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 			client_count++
 			steam_id = getSteamID( i )
 			int team = GetClientTeam( i )
-			new_player[3] = team
+			new_player[2] = team
 			
 			PushArrayString( players, steam_id )
 			PushArrayArray( players_times, new_player )
@@ -196,6 +197,7 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 	int oTeam = GetEventInt( event,"oldteam" )
 	int userid = GetEventInt( event,"userid" )
 	int client  = GetClientOfUserId( userid )
+
 
 	/* ensure its a legit client */
 	if(IsFakeClient(client))
@@ -225,10 +227,10 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 		/* otherwise populate the arrays */
 		if(player == -1){
 		  PushArrayString( players, steamID )
-		  player = FindStringInArray( players, steamID )
 		  PushArrayArray(players_times, { 0, 0, 0, 0 } )
 		  PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
 		  								0,0,0,0,0,0,0,0,0,0})
+		  player = FindStringInArray( players, steamID )
 		}
 	}
 
@@ -241,7 +243,6 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 			curTeam		
 			oldTeam
 	*/
-
 }
 
 
@@ -265,8 +266,14 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 	/* declare useful comparison */
 	int result = GetEventInt( event,"team" )
 	int random = GetRandomInt( 0,400 )
+	int gameDuration = GetTime() - roundStart
 
 	for(int i=0; i<GetArraySize(players); i++){
+		/* 
+			update player times
+			newTeam = 0 (none), gameEnd
+		*/
+
 		int last = (i == GetArraySize(players) -1)
 
 		/* store player data into buffers */
@@ -274,8 +281,9 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
 		GetArrayString( players,i,steam_id, STEAMID );
 
-		//float blu = player_time[1]/gameDuration
-		//float red = player_time[0]/gameDuration
+		/* let mysql do the division */
+		float blu = 0.0//( float:player_time[1] )/gameDuration
+		float red = 0.0///( float:player_time[0] )/gameDuration
 	
 		/* insert data into database */
 		Format( query,sizeof(query), INTOTEMP , 
