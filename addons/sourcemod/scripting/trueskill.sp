@@ -234,7 +234,7 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 		}
 	}
 
-	updateTimes( player, cTeam, oTeam )
+	updateTimes( player, cTeam, oTeam, 0 )
 }
 
 
@@ -249,7 +249,7 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 
 	/* declare useful buffers */
 	char query[QUERY_SIZE]
-	float player_time[2]
+	int player_time[4]
 	int player_stat[20]
 	char steam_id[STEAMID]
 
@@ -258,14 +258,11 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 	/* declare useful comparison */
 	int result = GetEventInt( event,"team" )
 	int random = GetRandomInt( 0,400 )
-	int gameDuration = GetTime() - roundStart
+	int curTime = GetTime()
+	int gameDuration = curTime - roundStart
 
 	for(int i=0; i<GetArraySize(players); i++){
-		/* 
-			update player times
-			newTeam = 0 (none), gameEnd
-		*/
-
+		updateTimes( i, 0, 0, curTime )
 		int last = (i == GetArraySize(players) -1)
 
 		/* store player data into buffers */
@@ -273,9 +270,9 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
 		GetArrayString( players,i,steam_id, STEAMID );
 
-		/* let mysql do the division */
-		float blu = 0.0//( float:player_time[1] )/gameDuration
-		float red = 0.0///( float:player_time[0] )/gameDuration
+		/* get team time ratio */
+		float blu = float( player_time[1] )/gameDuration
+		float red = float( player_time[0] )/gameDuration
 	
 		/* insert data into database */
 		Format( query,sizeof(query), INTOTEMP , 
@@ -376,17 +373,21 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 	HANDLES UPDATE TIME STUFF
 
 */
-updateTimes( int player, int newTeam, int oldTeam ){
+updateTimes( int player, int newTeam, int oldTeam, int curTime ){
 	/* ensure tracking game */
 	if(	!track_game )
 		return
 
-	/* get the required data array information */
-	int player_time[4];
-	GetArrayArray( players_times, player, player_time, sizeof( player_time ) ); 
+	if( curTime == 0 )
+		curTime = GetTime()
 
-	int curTime = GetTime()
+	/* get the required data array information */
+	int player_time[4]
+	GetArrayArray( players_times, player, player_time, sizeof( player_time ) )
 	int duration = curTime - player_time[3]
+
+	if( oldTeam == 0 )
+		oldTeam = player_time[2]
 
 	/* determine which team counter to increment */
 	switch ( oldTeam ){
