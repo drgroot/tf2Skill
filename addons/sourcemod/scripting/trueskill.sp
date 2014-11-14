@@ -198,8 +198,6 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 	int userid = GetEventInt( event,"userid" )
 	int client  = GetClientOfUserId( userid )
 
-	PrintToServer("player_change team")
-
 	/* ensure its a legit client */
 	if(IsFakeClient(client))
 		return
