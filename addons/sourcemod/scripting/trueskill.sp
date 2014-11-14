@@ -41,12 +41,11 @@ Author: Yusuf Ali
 #define URL 		"https://github.com/yusuf-a/tf2Skill"
 #define STEAMID		32
 #define QUERY_SIZE   512
-#define INTERVAL	0.15
 
 Handle db						// database handle
 Handle players_stats			// player k:d storage variable
 Handle players_times			// player time storage variable
-								//	time red, time blu, start_time, cur_team
+								//	time red, time blu, cur_team, start_time
 Handle players					// player ids variable		
 int roundStart					// time of round start
 int track_game = 0			// track game or not
@@ -195,6 +194,7 @@ public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 */
 public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 	int oTeam = GetEventInt( event,"oldteam" )
+	int cTeam = GetEventInt( event, "team" )
 	int userid = GetEventInt( event,"userid" )
 	int client  = GetClientOfUserId( userid )
 
@@ -234,15 +234,7 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 		}
 	}
 
-	/* update player times 
-		teams:
-			0 = none | _:TFTeam_Red  | _:TFTeam_Blue
-
-		update_time
-			playerID
-			curTeam		
-			oldTeam
-	*/
+	updateTimes( player, cTeam, oTeam )
 }
 
 
@@ -384,40 +376,34 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 	HANDLES UPDATE TIME STUFF
 
 */
-public Action UpdateTimes( Handle timer, any userid ){
-	int client  = GetClientOfUserId( userid )
-
-	if(	client==0 )
-		return Plugin_Stop
-
+updateTimes( int player, int newTeam, int oldTeam ){
 	/* ensure tracking game */
-	if(	!track_game || !IsClientConnected(client)	)
-		return Plugin_Stop
-
-	if(	!IsClientInGame(client)	 || client==0 )
-		return Plugin_Stop
-
-	/* get player id in array */
-	int player = getPlayerID( client )
+	if(	!track_game )
+		return
 
 	/* get the required data array information */
-	float player_time[2];
+	int player_time[4];
 	GetArrayArray( players_times, player, player_time, sizeof( player_time ) ); 
 
+	int curTime = GetTime()
+	int duration = curTime - player_time[3]
+
 	/* determine which team counter to increment */
-	switch ( GetClientTeam( client )	){
+	switch ( oldTeam ){
 		case ( _:TFTeam_Red ): {
-			player_time[0] = player_time[0] + INTERVAL
+			player_time[0] = player_time[0] + duration
 		}
 
 		case ( _:TFTeam_Blue ): {
-			player_time[1] = player_time[1] + INTERVAL
+			player_time[1] = player_time[1] + duration
 		}
 	}
+
+	player_time[2] = newTeam
+	player_time[3] = GetTime()
+
 	/* store array back into adt */
 	SetArrayArray(	players_times, player, player_time, sizeof( player_time )	)
-
-	return Plugin_Continue
 }
 
 
