@@ -368,11 +368,11 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 public Action UpdateTimes( Handle timer, any userid ){
 	int client  = GetClientOfUserId( userid )
 
-	/* ensure tracking game */
-	if(	!track_game || !IsClientConnected(client)	)
+	if(	!IsClientInGame(client)	 || client==0 )
 		return Plugin_Stop
 
-	if(	!IsClientInGame(client)	)
+	/* ensure tracking game */
+	if(	!track_game || !IsClientConnected(client)	)
 		return Plugin_Stop
 
 	/* get player id in array */
