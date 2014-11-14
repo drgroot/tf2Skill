@@ -1,14 +1,12 @@
 /*
 
-TRUESKILL RANKING SYSTEM
+ TRUESKILL RANKING SYSTEM
 
-A TF2 adapted implementation of the ever popular
-trueskill ranking system.
+ A TF2 adapted implementation of the ever popular
+ trueskill ranking system.
 
-Author: Yusuf Ali
+ Author: Yusuf Ali
 
-*/
-/*
  YusufAli's TrueSkill Ranking System
  Copyright (C) 2014 YusufAli
 
@@ -71,6 +69,45 @@ Author: Yusuf Ali
 	g_playerElo		foward to allow other plugins to get Elo of player
 	roundStart 		using getTime(), the start of the round
 	track_game		1 to track elo statistics, 0 to ignore
+
+
+	What this plugin does:
+
+	This plugin does the low level tracking to send data to the trueskill.py
+	python script to calculate player ranks under the TrueSkill system.
+
+	In order to do so, trueskill.py needs 3 pieces of information from every 
+	player who took part in the round:
+
+	1. SteamID (uniquely desribe player)
+	2. percent time on each time (eg: 40% on red, 60% on blue)
+	3. which team won the round
+
+	Additionally, this plugin tracks the kill and death statistics for each 
+	player (not required, but a nice feature)
+
+	How this plugin operates:
+
+	1. At the start of the round
+		- reset all variables
+		- beginning of round time is stored into roundStart
+		- players are assigned a unique number (playerID) to their steamid
+		- players information such as team and kill stats are initialized
+
+	2. Player teamchanges/reconnects/disconnencts
+		- the amount of time spent on the previous team is updated
+		- the players current team is updated
+		- the time of the event is updated
+		- all of this is stored in players_times
+
+	3. Player kills/dies
+		- player kill/death stats are updated into players_stats
+
+	4. round ends
+		- round is assigned a random number (called 'random')
+		- all player times on teams are updated
+		- throws information (kill/death stats, aswell as required trueskill data) into mysql database identified by the round number
+		- when insertation has been complete, a curl request is sent to the php file with the random number, initiating the python script to calculate player ranks
 
 */
 Handle db = null	
