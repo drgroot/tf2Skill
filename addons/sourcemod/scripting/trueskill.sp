@@ -253,8 +253,6 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 	int player_stat[20]
 	char steam_id[STEAMID]
 
-	track_game = 0
-
 	/* declare useful comparison */
 	int result = GetEventInt( event,"team" )
 	int random = GetRandomInt( 0,400 )
@@ -294,6 +292,7 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 			SQL_TQuery( db,T_query,query,0 )
 		}
 	}
+	track_game = 0
 }
 
 
