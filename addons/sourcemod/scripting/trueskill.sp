@@ -42,13 +42,45 @@ Author: Yusuf Ali
 #define STEAMID		32
 #define QUERY_SIZE   512
 
-Handle db						// database handle
-Handle players_stats			// player k:d storage variable
-Handle players_times			// player time storage variable
-Handle players					// player ids variable		
-int roundStart					// time of round start
-int track_game = 0			// track game or not
-Handle g_playerElo = null 	// player Elo foward
+/*
+	VARIABLE DOCUMENTATION
+
+	db 				Database handle for MySQL connection
+
+	players_stats 	Player kill and death storage variable
+		structure: 	<playerID>	[array 0..19]
+		the array has 20 elements (2 for every type of class)
+		the first 10 are to store kills (1 index for each class)
+		the last 10 are to store deaths (1 index for each class)
+
+	players_times 	Player time storage variable
+		structure:	<playerID>	[array 0..3]
+		the array has 4 elements to store how long a player has been on a team
+		0:	time on team red (in seconds)
+		1:	time on team blu (in seconds)
+		2:	int of the current team the player is on
+		3:	time (using GetTime() ) that player joined current team
+		the logic is that to maintain the time, simply subtract GetTime() 
+		with [3] and append it to the team specified in [2]
+
+	players 		Player Id Storage variable
+		structure: 	<playerID>	<steamID>
+		this is to find the player id (FindStringInArray)
+		given the players steamID
+
+	g_playerElo		foward to allow other plugins to get Elo of player
+	roundStart 		using getTime(), the start of the round
+	track_game		1 to track elo statistics, 0 to ignore
+
+*/
+Handle db = null	
+Handle players_stats
+Handle players_times
+Handle players
+Handle g_playerElo = null
+int roundStart
+int track_game = 0
+	
 
 /* define convars */
 Handle sm_minClients = null
@@ -56,14 +88,12 @@ Handle sm_url = null
 Handle sm_minGlobal = null
 
 
-
 /* delcare plublic variable information */
 public Plugin myinfo = {name = PLUGIN_NAME,author = AUTHOR,description = "",version = VERSION,url = URL};
 
 public OnPluginStart(){
 	/* connect to database */
-	char error[255]
-	db = SQL_DefConnect(error,sizeof(error))
+	SQL_TConnect( gotDB, "default" )
 
 	/* add to updater */
 	if(	LibraryExists( "updater" )	){
@@ -88,6 +118,12 @@ public OnPluginStart(){
 	players_stats = CreateArray( 20, 0 )
 	players_times = CreateArray( 4, 0 )
 	players = CreateArray( STEAMID, 0 )
+}
+public gotDB( Handle o, Handle h, const char[] e, any data){
+	if( h == null )
+		LogError("Database failure: %s", e)
+	else
+		db = h
 }
 public OnLibraryAdded(	const char[] name	){
 	 if(	StrEqual( name, "updater" )	){
