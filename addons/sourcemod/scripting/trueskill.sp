@@ -82,6 +82,11 @@ public OnPluginStart(){
 	HookEvent( "player_death", Event_pDeath )
 	RegConsoleCmd( "sm_rank", playRank )
 	g_playerElo = CreateForward( ET_Event, Param_Cell, Param_Float, Param_Cell )
+
+	/* init arrays */
+	players_stats = CreateArray( 20,0 )
+	players_times = CreateArray( 2,0 )
+	players = CreateArray( STEAMID,0 )
 }
 public OnLibraryAdded(	const char[] name	){
 	 if(	StrEqual( name, "updater" )	){
@@ -195,9 +200,9 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 	/* restart required variables */
 	gameDuration = 0.0
-	players_stats = CreateArray( 20,0 )
-	players_times = CreateArray( 2,0 )
-	players = CreateArray( STEAMID,0 )
+	ClearArray( players_stats )
+	ClearArray( players_times )
+	ClearArray( players )
 	int client_count = 0
 
 	char steam_id[STEAMID]
