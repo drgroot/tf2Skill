@@ -47,7 +47,7 @@ Handle db						// database handle
 Handle players_stats			// player k:d storage variable
 Handle players_times			// player time storage variable
 Handle players					// player ids variable		
-float gameDuration = 0.0	// time of round start
+int roundStart					// time of round start
 int track_game = 0			// track game or not
 Handle g_playerElo = null 	// player Elo foward
 
@@ -55,6 +55,8 @@ Handle g_playerElo = null 	// player Elo foward
 Handle sm_minClients = null
 Handle sm_url = null
 Handle sm_minGlobal = null
+
+
 
 /* delcare plublic variable information */
 public Plugin myinfo = {name = PLUGIN_NAME,author = AUTHOR,description = "",version = VERSION,url = URL};
@@ -84,9 +86,9 @@ public OnPluginStart(){
 	g_playerElo = CreateForward( ET_Event, Param_Cell, Param_Float, Param_Cell )
 
 	/* init arrays */
-	players_stats = CreateArray( 20,0 )
-	players_times = CreateArray( 2,0 )
-	players = CreateArray( STEAMID,0 )
+	players_stats = CreateArray( 20, 0 )
+	players_times = CreateArray( 4, 0 )
+	players = CreateArray( STEAMID, 0 )
 }
 public OnLibraryAdded(	const char[] name	){
 	 if(	StrEqual( name, "updater" )	){
@@ -145,6 +147,48 @@ public Event_pDeath( Handle event, const char[] name, bool dontBroadcast){
 }
 
 /*
+	- reset arrays, grab client information
+	 - structure data
+*/
+public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
+	/* restart required variables */
+	roundStart = GetTime()
+	ClearArray( players_stats )
+	ClearArray( players_times )
+	ClearArray( players )
+	int client_count = 0
+
+	int new_player[4] = {0, 0, 0, 0}
+	new_player[2] = roundStart
+
+	char steam_id[STEAMID]
+
+	//loop through all players that are alive
+	for(new i=1;i<= MaxClients;i++){
+		
+		/* ensures client is connected */
+		if( IsClientInGame( i )  && !IsFakeClient( i ) ){
+			client_count++
+			steam_id = getSteamID( i )
+			int team = GetClientTeam( i )
+			new_player[3] = team
+			
+			PushArrayString( players, steam_id )
+			PushArrayArray( players_times, new_player )
+			PushArrayArray( players_stats,{0,0,0,0,0,0,0,0,0,0,
+											0,0,0,0,0,0,0,0,0,0} )
+		}
+	}
+
+	/* determine if to track the game or not */
+	track_game  = (	client_count >= GetConVarInt(sm_minClients)	)
+
+	/* ensure database is connected */
+	if( db == null )
+		track_game = 0
+}
+
+/*
 	- keep tract of client playing time
 	- update client playing time
 */
@@ -160,6 +204,7 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 	/* get steamID */
 	char steamID[STEAMID]
 	steamID = getSteamID( client )
+	int player = getPlayerID( client )
 
 	/* get player name */
 	char playerName[MAX_NAME_LENGTH *2 +1]
@@ -176,68 +221,29 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 		/* only if tracking game */
 		if( !track_game )
 			return
-	
-		int player = getPlayerID( client )
 
 		/* otherwise populate the arrays */
 		if(player == -1){
 		  PushArrayString( players, steamID )
 		  player = FindStringInArray( players, steamID )
-		  PushArrayArray(players_times,{0.0,0.0})
+		  PushArrayArray(players_times, { 0, 0, 0, 0 } )
 		  PushArrayArray(players_stats,{0,0,0,0,0,0,0,0,0,0,
 		  								0,0,0,0,0,0,0,0,0,0})
 		}
-
-		/* create timer */
-		CreateTimer( INTERVAL, UpdateTimes, userid, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
 	}
+
+	/* update player times 
+		teams:
+			0 = none | _:TFTeam_Red  | _:TFTeam_Blue
+
+		update_time
+			playerID
+			curTeam		
+			oldTeam
+	*/
+
 }
 
-/*
-	- reset arrays, grab client information
-	 - structure data
-*/
-public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
-	/* restart required variables */
-	gameDuration = 0.0
-	ClearArray( players_stats )
-	ClearArray( players_times )
-	ClearArray( players )
-	int client_count = 0
-
-	char steam_id[STEAMID]
-
-	//loop through all players that are alive
-	for(new i=1;i<= MaxClients;i++){
-		/* ensures client is connected */
-		if( IsClientInGame( i )  && !IsFakeClient( i ) ){
-			client_count++
-			steam_id = getSteamID( i )
-
-			PushArrayString( players, steam_id )
-			PushArrayArray( players_times,{0.0,0.0} )
-			PushArrayArray( players_stats,{0,0,0,0,0,0,0,0,0,0,
-											0,0,0,0,0,0,0,0,0,0} )
-			int userid = GetClientUserId( i )
-			/* create timer */
-			CreateTimer( INTERVAL, UpdateTimes, userid, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE )
-		}
-	}
-	CreateTimer( INTERVAL, gameTime, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE )
-
-	/* determine if to track the game or not */
-	track_game  = (	client_count >= GetConVarInt(sm_minClients)	)
-
-	/* ensure database is connected */
-	if( db == null )
-		track_game = 0
-}
-public Action gameTime( Handle timer, any data ){
-	if(!track_game)
-		return Plugin_Stop
-	gameDuration += INTERVAL
-	return Plugin_Continue
-}
 
 /*
 	- finalize client data, playing time, teams etc
@@ -268,8 +274,8 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 		GetArrayArray( players_times,i,player_time,sizeof(player_time) );
 		GetArrayString( players,i,steam_id, STEAMID );
 
-		float blu = player_time[1]/gameDuration
-		float red = player_time[0]/gameDuration
+		//float blu = player_time[1]/gameDuration
+		//float red = player_time[0]/gameDuration
 	
 		/* insert data into database */
 		Format( query,sizeof(query), INTOTEMP , 
@@ -405,14 +411,7 @@ public Action UpdateTimes( Handle timer, any userid ){
 
 	return Plugin_Continue
 }
-/* prints an error given handle and error string */
-printTErr( Handle hndle, const char[] error ){
-	if( hndle == null ){
-		LogError( "TrueSkill - Query Failed: %s", error )
-		return 0
-	}
-	return 1
-}
+
 
 
 /*
@@ -428,7 +427,14 @@ char[] getSteamID( client ){
 int getPlayerID( client ){
 	return FindStringInArray( players, getSteamID( client ) )
 }
-
+/* prints an error given handle and error string */
+printTErr( Handle hndle, const char[] error ){
+	if( hndle == null ){
+		LogError( "TrueSkill - Query Failed: %s", error )
+		return 0
+	}
+	return 1
+}
 
 
 
