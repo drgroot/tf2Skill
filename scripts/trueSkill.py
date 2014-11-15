@@ -129,6 +129,14 @@ for player in cur:
 # ensure minimum people are playing
 if( len(team_red) + len(team_blu) ) < min_clients:
 	logging.info('\t\tGroup %d was filtered' % gameNumber)
+	
+	try:
+		cur_del = conn.cursor()
+		cur_del.execute("DELETE FROM temp WHERE random = %d" % gameNumber)
+		conn.commit(); cur_del.close();
+	except:
+		logging.error('could not prune group %d from database' % gameNumber)
+	conn.close()
 	exit()
 
 # apply trueskill calculation
