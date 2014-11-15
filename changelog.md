@@ -1,5 +1,12 @@
 #ChangeLog
 
+###[v2.21 - November 15, 2014][4]
+
+* new update url that is more dynamic 
+* sql structure is now more compact and optimized 
+* added an official changelog 
+* updated python script to prune filtered groups
+
 ###[V2.20 - November 5, 2014][3]
 
 * new structure in preperation for release of v3.0 when sourcemod 1.7 is released
@@ -19,6 +26,7 @@
 * inital release of project
 * plugin yet to be polished
 
+[4]: https://github.com/yusuf-a/tf2Skill/archive/v2.21.zip
 [3]: https://github.com/yusuf-a/tf2Skill/archive/v2.20.zip
 [2]: https://github.com/yusuf-a/tf2Skill/archive/v2.0.0.zip
 [1]: https://github.com/yusuf-a/tf2Skill/archive/v1.0.zip
