@@ -36,7 +36,7 @@ Author: Yusuf Ali
 #define UPDATE_URL 	"http://dev.yusufali.ca/plugins/tf2Skill/1.6/"
 #define PLUGIN_NAME	"TrueSkill Ranking System"
 #define AUTHOR 		"Yusuf Ali"
-#define VERSION 	"2.21"
+#define VERSION 	"2.22"
 #define URL 		"https://github.com/yusuf-a/tf2Skill"
 #define sID_size	20
 #define QUERY_SIZE   512
@@ -265,11 +265,7 @@ public Event_rEnd(Handle:event, const String:namep[], bool:dontBroadcast){
 
 	/* declare useful comparison */
 	new result = GetEventInt(event,"team");
-	new random = GetRandomInt(0,400);
-
-	/* ensure that the game was not a farm fest */
-	if (GetArraySize(players) < 24 && client_count < GetConVarInt(sm_minClients)) 
-		return;
+	new random = GetRandomInt( 1, 999 )
 
 	for(new i=0;i<GetArraySize(players);i++){
 		new last = (i == GetArraySize(players) -1 );

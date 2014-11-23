@@ -1,5 +1,9 @@
 #ChangeLog
 
+###[v2.22 - November 23, 2014][5]
+
+* bug fix in the range of random numbers being generated
+
 ###[v2.21 - November 15, 2014][4]
 
 * new update url that is more dynamic 
@@ -26,6 +30,7 @@
 * inital release of project
 * plugin yet to be polished
 
+[5]: https://github.com/yusuf-a/tf2Skill/archive/v2.22.zip
 [4]: https://github.com/yusuf-a/tf2Skill/archive/v2.21.zip
 [3]: https://github.com/yusuf-a/tf2Skill/archive/v2.20.zip
 [2]: https://github.com/yusuf-a/tf2Skill/archive/v2.0.0.zip
