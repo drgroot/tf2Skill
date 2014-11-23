@@ -326,7 +326,7 @@ public Event_rEnd( Handle event, const char[] namep, bool dontBroadcast){
 
 	/* declare useful comparison */
 	int result = GetEventInt( event,"team" )
-	int random = GetRandomInt( 0,400 )
+	int random = GetRandomInt( 1, 999 )
 	int curTime = GetTime()
 	int gameDuration = curTime - roundStart
 
