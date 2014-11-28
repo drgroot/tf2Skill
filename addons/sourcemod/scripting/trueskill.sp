@@ -486,7 +486,7 @@ updateTimes( int player, int newTeam, int oldTeam, int curTime ){
 */
 char[] getSteamID( client ){
 	char steam_id[STEAMID]
-	GetClientAuthId( client, AuthIdType:AuthId_Steam2 , steam_id, STEAMID )
+	GetClientAuthId( client, AuthIdType:AuthId_Steam3 , steam_id, STEAMID )
 	return steam_id
 }
 int getPlayerID( client ){
