@@ -1,6 +1,6 @@
 #ChangeLog
 
-###[V3.0 - Alpha][3]
+##[V3.0 - Alpha][3]
 
 * includes native for other plugins to get players elo
 * removed the use of timers, thus less need for resources
@@ -11,14 +11,14 @@
 * multiple bug fixes (see commit log)
 * all interactions with mysql are threaded, including connection
 
-###[V2.0 - September 19, 2014][2]
+##[V2.0 - September 19, 2014][2]
 
 * all mysql transactions are threaded
 * daemonized python script
 * python script more stable, prepare for daemonization
 * !rank command displays ranking with some formatting
 
-###[V1.0 - September 9, 2014][1]
+##[V1.0 - September 9, 2014][1]
 
 * inital release of project
 * plugin yet to be polished

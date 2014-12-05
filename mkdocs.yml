@@ -1,2 +1,13 @@
-site_name: My Docs
+site_name: TF2 Skill
+site_author: Yusuf Ali
+site_favicon: favicon.ico
+repo_url: https://github.com/yusuf-a/tf2Skill
+pages:
+- ['index.md', 'Introduction']
+- ['installation.md', 'Installation']
+- ['releases.md', 'Releases']
+- ['changelog.md', 'ChangeLog']
+- ['issues.md', 'Issues']
+- ['license.md', 'License']
 theme: readthedocs
+theme_dir: 'docs/custom_theme'
