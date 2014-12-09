@@ -6,6 +6,10 @@ $(function(){
 
 	$("#prev").click(function(){cur_page--; populate(cur_page)})
 	$("#next").click(function(){cur_page++; populate(cur_page)})
+
+	function showAlt(){$(this).replaceWith(this.alt)};
+	function addShowAlt(selector){$(selector).error(showAlt).attr("src", $(selector).src)};
+	addShowAlt("img");
 })
 
 function populate(page){
@@ -14,12 +18,10 @@ function populate(page){
 		return
 	}
 
-	$("#cover").show()
-	cur_page = page
+	$.post('mod/list.php', {page: cur_page}, function(rows){
+		rows = JSON.parse( rows )
 
-	$.getJSON('/get/page/' + page, function(rows){
 		$("table").find("tr:gt(0)").remove();
-		$("#cover").hide()
 		for(var index in rows){
 			var player = rows[index]
 			
@@ -30,7 +32,7 @@ function populate(page){
 		}
 
 		$(".playerName").click(function(){
-			window.location.href = '/player/{0}/{1}'.format($(this).attr('id'),$(this).text())
+			window.location.href = window.location.href.replace('index.html','') + 'player.html?player_id={0}'.format($(this).attr('id'))
 		})
 	})
 }

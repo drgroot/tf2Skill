@@ -5,3 +5,4 @@ addons/sourcemod/scripting/include/*
 scripts/config.file
 scripts/trueskill.log
 site/
+web/mod/config.php

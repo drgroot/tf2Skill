@@ -1,0 +1,47 @@
+<html>
+	<head>
+		<title>TrueSkill Ranking System</title>
+		<link rel="stylesheet" type="text/css" href="css/base.css">
+		<link rel="stylesheet" type="text/css" href="css/stats.css">
+		<script>
+		if (!String.prototype.format) {
+         String.prototype.format = function() {
+            var args = arguments;
+            return this.replace(/{(\d+)}/g, function(match, number) { 
+               return typeof args[number] != 'undefined'
+                  ? args[number]
+                  : match
+               ;
+            });
+         };
+         }
+		</script>
+		<script src='http://code.jquery.com/jquery.js'></script>
+		<script src="js/stats.js"></script>
+	</head>
+
+	<body>
+
+		<div id='header'>
+			<img src='header.png' alt='TrueSkill Ranking System'/>
+		</div>
+
+		<div id='wrapper'>
+			<table>
+				<tr>
+					<th>Rank</th>
+					<th>Player</th>
+					<th>Elo</th>
+					<th>Kills</th>
+					<th>Deaths</th>
+				</tr>
+			</table>
+
+			<div id='pager' class='flex'>
+				<div id='prev' class='pagesel button round'>Prev Page</div>
+				<div id='next' class='pagesel button round'>Next Page</div>
+			</div>
+		</div>
+	</body>
+
+</html>

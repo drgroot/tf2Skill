@@ -1,0 +1,17 @@
+<?php
+
+// enter in your mysql credentials
+$database = "";
+$username = "";
+$password = "";
+$port = 3306;
+$host = "";
+
+
+// dont touch these, otherwise nothing works
+$queryPlayers = "SELECT player_id, name, 30*rank + 1500 as elo, 
+			IFNULL(SUM(kills),0) as kills,IFNULL(SUM(deaths),0) as deaths 
+			FROM players LEFT JOIN player_stats USING(steamID) 
+			GROUP BY steamID ORDER BY rank DESC LIMIT ";
+
+?>

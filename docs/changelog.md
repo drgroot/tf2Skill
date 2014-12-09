@@ -10,6 +10,7 @@
 * python script creates its own log file to log errors
 * multiple bug fixes (see commit log)
 * all interactions with mysql are threaded, including connection
+* added a website interface
 
 ##[V2.0 - September 19, 2014][2]
 
