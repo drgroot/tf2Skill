@@ -2,41 +2,49 @@ var player = {}
 var kills = []
 var deaths = []
 $(function(){
-$.getJSON('/get/player/' + $(".data").text(), function(data){player=data;
-	$("#cover").hide()
+	function showAlt(){$(this).replaceWith(this.alt)};
+	function addShowAlt(selector){$(selector).error(showAlt).attr("src", $(selector).src)};
+	addShowAlt("img");
 
-	$("#elo").text(parseInt(player.elo))
-	$("#mean").text(player.mu.toFixed(2))
-	$("#sigma").text(player.sigma.toFixed(2))
-	$("#kills").text(player.kills)
-	$("#deaths").text(player.deaths)
+	$.post('mod/player.php', 
+		{player_id: window.location.href.match(/player_id=(\d+)/)[1] } 
+		, function(data){
+			player= JSON.parse( data )
 
-	kills = player.kill;deaths = player.death
-	makeCharts(kills,'kill_chart',"Kills: ");
-	makeCharts(deaths,'deth_chart',"Deaths: ");
+			document.title = "TF2Skill - {0}".format(player.name)
+			$(".player_main_name").html("{0}<br>{1}".format(player.name, player.steamID))
+			$("#elo").text(parseInt(player.elo))
+			$("#mean").text(player.mu.toFixed(2))
+			$("#sigma").text(player.sigma.toFixed(2))
+			$("#kills").text(player.kills)
+			$("#deaths").text(player.deaths)
 
-	$("#bellCurve").html("");
-	$.jqplot('bellCurve',
-		[NormalZ_all(500,player.mu,player.sigma),
-		NormalZ_all(500,player.bestMu,player.bestSigma)],
-	{ 
-		title:'Estimate of Player\'s Skill',
-			
-		seriesDefaults:{showMarker: false,},
+			kills = player.kill;deaths = player.death
+			makeCharts(kills,'kill_chart',"Kills: ");
+			makeCharts(deaths,'deth_chart',"Deaths: ");
 
-		grid:{background: '#f7f7f7'},
-			
-		highlighter:{show:true}
-			
-		,legend:{show: true},
-			
-		series:[{label:"Player's Skill"},{label:'Top Skill' }]
-	});
-	$(".jqplot-xaxis-tick").hide();
-	$(".jqplot-yaxis-tick").hide();
+			$("#bellCurve").html("");
+			$.jqplot('bellCurve',
+				[NormalZ_all(500,player.mu,player.sigma),
+				NormalZ_all(500,player.bestMu,player.bestSigma)],
+			{ 
+				title:'Estimate of Player\'s Skill',
+					
+				seriesDefaults:{showMarker: false,},
 
-	$(window).resize(function(){s()});
-})
+				grid:{background: '#f7f7f7'},
+					
+				highlighter:{show:true}
+					
+				,legend:{show: true},
+					
+				series:[{label:"Player's Skill"},{label:'Top Skill' }]
+			});
+			$(".jqplot-xaxis-tick").hide();
+			$(".jqplot-yaxis-tick").hide();
+
+			$(window).resize(function(){s()});
+	})
 })
 
 function makeCharts(data,chart_id,text){

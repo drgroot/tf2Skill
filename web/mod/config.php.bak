@@ -13,5 +13,8 @@ $queryPlayers = "SELECT player_id, name, 30*rank + 1500 as elo,
 			IFNULL(SUM(kills),0) as kills,IFNULL(SUM(deaths),0) as deaths 
 			FROM players LEFT JOIN player_stats USING(steamID) 
 			GROUP BY steamID ORDER BY rank DESC LIMIT ";
-
+$getPlayerVitals= "SELECT name, steamID, lastConnect, mew as mu, sigma, 30*rank + 1500 as elo
+			FROM players WHERE player_id = ";
+$getBest= "SELECT mew as mu,sigma FROM players ORDER BY rank DESC LIMIT 1";
+$getKillStat= "SELECT roles,kills,deaths FROM player_stats WHERE steamID = ";
 ?>

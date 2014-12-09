@@ -1,0 +1,74 @@
+<html>
+	<head>
+		<title>TF2Skill - </title>
+		<link rel="stylesheet" type="text/css" href="css/base.css">
+		<link rel="stylesheet" type="text/css" href="css/player.css">
+		<link rel="stylesheet" type="text/css" href="css/jqplot.css">
+		<script>
+		if (!String.prototype.format) {
+         String.prototype.format = function() {
+            var args = arguments;
+            return this.replace(/{(\d+)}/g, function(match, number) { 
+               return typeof args[number] != 'undefined'
+                  ? args[number]
+                  : match
+               ;
+            });
+         };
+         }
+		</script>
+		<script src='http://code.jquery.com/jquery.js'></script>
+
+		<script src="js/jqplot.js"></script>
+		<script src="js/plugins/jqplot.canvasAxisLabelRenderer.js"></script>
+		<script src="js/plugins/jqplot.canvasTextRenderer.js"></script>
+		<script src="js/plugins/jqplot.donutRenderer.js"></script>
+		<script src="js/plugins/jqplot.highlighter.js"></script>
+		<script src="js/probability.js"></script>
+
+		<script src="js/player.js"></script>
+	</head>
+
+	<body>
+
+		<div id='header'>
+			<img src='header.png' alt='TF2Skill Ranking System'/>
+		</div>
+
+		<div id='content'>
+			<div id='main' class='player_main_name round curved'></div>
+			<div id='row' style='justify-content:space-around' class='flex round'>
+				<div id='bellCurve'></div>	
+				<div id='vitals'>
+					<div id='vital'> Elo:
+						<span id='elo' class='stat'></span>
+					</div>
+					<div id='vital'> Mean:
+						<span id='mean' class='stat'></span>
+					</div>
+					<div id='vital'> Sigma:
+						<span id='sigma' class='stat'></span>
+					</div>
+					<div id='vital'> Kills:
+						<span id='kills' class='stat'></span>
+					</div>
+					<div id='vital'> Deaths:
+						<span id='deaths' class='stat'></span>
+					</div>
+				</div>
+			</div>
+
+			<div id='main' class='round'> Class Stats</div>
+			<div id='row' class='round flex'>
+				<div id='plot-title' style='width:50%'>Deaths By Class
+					<div id='deth_chart' class='chart'></div>
+				</div>
+				<div id='plot-title' style='width:50%'>Kills By Class
+					<div id='kill_chart' class='chart'></div>
+				</div>
+			</div>
+		</div>
+
+	</body>
+
+</html>
