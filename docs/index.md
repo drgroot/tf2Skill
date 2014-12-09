@@ -1,4 +1,4 @@
-#TF2 Skill
+#TF2 Skill - [Download][8]
 
 ##Overview
 TF2 Skill is an adaptation of [Microsoft's TrueSkill][1] ranking system into source games. This plugin has been only tested with Team Fortress 2.
@@ -37,3 +37,4 @@ sm_trueskill_global "50" //minimum rank to display globally to the server, 0 for
 [5]: http://trueskill.org/
 [6]: https://pypi.python.org/pypi/PyMySQL
 [7]: http://playtf2.com/stats/
+[8]: https://github.com/yusuf-a/tf2Skill/archive/master.zip
