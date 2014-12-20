@@ -241,7 +241,7 @@ public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 		/* ensures client is connected */
 		if( IsClientInGame( i )  && !IsFakeClient( i ) ){
 			client_count++
-			steam_id = getSteamID( i )
+			steam_id = getSteamID_noValidation( i )
 			int team = GetClientTeam( i )
 			new_player[2] = team
 			
@@ -484,6 +484,11 @@ updateTimes( int player, int newTeam, int oldTeam, int curTime ){
 	PlayerID / SteamID Functions
 
 */
+char[] getSteamID_noValidation( client ){
+	char steam_id[STEAMID]
+	GetClientAuthId( client, AuthIdType:AuthId_Steam3 , steam_id, STEAMID, false )
+	return steam_id
+}
 char[] getSteamID( client ){
 	char steam_id[STEAMID]
 	GetClientAuthId( client, AuthIdType:AuthId_Steam3 , steam_id, STEAMID )
