@@ -123,7 +123,7 @@ Handle players
 Handle g_playerElo = null
 int roundStart
 int track_game = 0
-	
+int track_elo = 1
 
 /* define convars */
 Handle sm_minClients = null
@@ -178,6 +178,7 @@ public Updater_OnPluginUpdated(){
 }
 public APLRes AskPluginLoad2(Handle me, bool late, char[] err, err_max){
 	CreateNative( "trueskill_getElo", native_trueskill_getElo )
+	CreateNative( "trueskill_enable", native_trueskill_enable )
 	return APLRes_Success
 }
 
@@ -235,6 +236,11 @@ public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 	ClearArray( players_times )
 	ClearArray( players )
 	int client_count = 0
+
+	if( track_elo == 0 ){
+		track_game = 0
+		return
+	}
 
 	int new_player[4] = {0, 0, 0, 0}
 	new_player[3] = roundStart
@@ -518,6 +524,10 @@ printTErr( Handle hndle, const char[] error ){
 	NATIVES 
 
 */
+public native_trueskill_enable( Handle plugin, numParams ){
+	track_elo = GetNativeCell(1)
+}
+
 public native_trueskill_getElo( Handle plugin, numParams ){
 	int user = GetNativeCell(1)
 

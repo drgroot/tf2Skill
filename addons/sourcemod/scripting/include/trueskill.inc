@@ -33,6 +33,16 @@ functag OnGetEloFunc Action:public( userid, float:elo, champ )
 */
 native trueskill_getElo( userid, OnGetEloFunc:callback )
 
+
+/* 
+	Enables/Disables TrueSkill Ranking System
+
+	@param enabled		boolean, 1 or 0
+
+	@return				void
+*/
+native trueskill_enable( enabled )
+
 stock bool IsNotClient( client ) {
 	if ( !( 1 <= client <= MaxClients ) || !IsClientInGame(client) || IsFakeClient(client) )
 		return true;
