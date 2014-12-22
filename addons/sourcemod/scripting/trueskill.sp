@@ -40,6 +40,12 @@
 #define STEAMID		32
 #define QUERY_SIZE   512
 
+/* MySQL Query definitions */
+#define NEWPLAYER "insert into players (steamID,name) values ('%s','%s') on duplicate key update name = '%s';"
+#define INTOTEMP "INSERT INTO `temp` (steamid,time_blue,time_red,result,random) VALUES('%s',%f,%f,%d,%d)"
+#define STATS "INSERT INTO `player_stats` (stat_id,steamID,roles,kills,deaths) VALUES ('%s.%d','%s',%d,%d,%d) ON DUPLICATE KEY UPDATE kills = kills + %d, deaths = deaths + %d"
+#define RANK "select count(*) rank, 30*my.rank + 1500 from players my left join players others on others.rank >= my.rank where my.SteamID = '%s'"
+
 /*
 	VARIABLE DOCUMENTATION
 
@@ -237,19 +243,18 @@ public Event_rStart( Handle event, const char[] name, bool dontBroadcast ){
 
 	//loop through all players that are alive
 	for(new i=1;i<= MaxClients;i++){
-		
-		/* ensures client is connected */
-		if( IsClientInGame( i )  && !IsFakeClient( i ) ){
-			client_count++
-			steam_id = getSteamID_noValidation( i )
-			int team = GetClientTeam( i )
-			new_player[2] = team
+		if( IsNotClient(i) )
+			continue
+
+		client_count++
+		steam_id = getSteamID_noValidation( i )
+		int team = GetClientTeam( i )
+		new_player[2] = team
 			
-			PushArrayString( players, steam_id )
-			PushArrayArray( players_times, new_player )
-			PushArrayArray( players_stats,{0,0,0,0,0,0,0,0,0,0,
+		PushArrayString( players, steam_id )
+		PushArrayArray( players_times, new_player )
+		PushArrayArray( players_stats,{0,0,0,0,0,0,0,0,0,0,
 											0,0,0,0,0,0,0,0,0,0} )
-		}
 	}
 
 	/* determine if to track the game or not */
@@ -271,7 +276,7 @@ public Event_pTeam( Handle event, const char[] name, bool dontBroadcast){
 	int client  = GetClientOfUserId( userid )
 
 	/* ensure its a legit client */
-	if(IsFakeClient(client))
+	if( IsNotClient(client) )
 		return
 	
 	/* get steamID */
@@ -414,9 +419,9 @@ public rank_query(Handle:owner,Handle:hndl,const String:error[], any:data){
 	int rank = 0; float sigma = 100.0
 	char name[MAX_NAME_LENGTH]
 
-	if(!IsClientInGame(client)){
+	if( IsNotClient(client) )
 		return
-	}
+	
 	if( hndl == null ){
 		printTErr(hndl,error)
 	}
@@ -517,7 +522,7 @@ public native_trueskill_getElo( Handle plugin, numParams ){
 	int user = GetNativeCell(1)
 
 	int client = GetClientOfUserId( user )
-	if( !IsClientInGame(client) )
+	if( IsNotClient(client) )
 		return ThrowNativeError( SP_ERROR_NATIVE, "Client not connected" )
 
 	char steamID[STEAMID]
