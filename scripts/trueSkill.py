@@ -63,13 +63,13 @@ def getPlayerSkill(steamID,conn):
 			return float(person[0]), float(person[1])
 	
 		# check if was parsed by logsTF script
-		cur_gP.execute("SELECT mew, sigma, name FROM players_logsTF where steamID = '%s'" % steamID)
+		cur_gP.execute("SELECT mew, sigma, name, games  FROM players_logsTF where steamID = '%s'" % steamID)
 		for person in cur_gP:
 			cur_uP.execute("DELETE FROM players_logsTF where steamID = '%s'" % steamID)
 			data = { "steam": steamID, "mu" : float(person[0]), "sigma": float(person[1])
-						, "name": person[2] }
-			cur_uP.execute("INSERT INTO players (steamID, name, mew, sigma) VALUES \
-					( '%(steam)s', '%(name)s', %(mu)f, %(sigma)f )  " % data  )
+						, "name": person[2], "game": person[3]  }
+			cur_uP.execute("INSERT INTO players (steamID, name, mew, sigma, games) VALUES \
+					( '%(steam)s', '%(name)s', %(mu)f, %(sigma)f, %(game)d  )  " % data  )
 			
 			conn.commit()
 			cur_gP.close()
