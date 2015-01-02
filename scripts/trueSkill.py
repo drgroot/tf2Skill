@@ -54,12 +54,27 @@ args = parser.parse_args()
 # return mu, sigma
 def getPlayerSkill(steamID,conn):
 	try:
-		cur_gP = conn.cursor(); 
+		cur_gP = conn.cursor();
+		cur_uP = conn.cursor()
 		cur_gP.execute("SELECT mew,sigma FROM players WHERE steamID = '%s'" % steamID);
 	
 		for person in cur_gP:
 			cur_gP.close();
 			return float(person[0]), float(person[1])
+	
+		# check if was parsed by logsTF script
+		cur_gP.execute("SELECT mew, sigma, name FROM players_logsTF where steamID = '%s'" % steamID)
+		for person in cur_gP:
+			cur_uP.execute("DELETE FROM players_logsTF where steamID = '%s'" % steamID)
+			data = { "steam": steamID, "mu" : float(person[0]), "sigma": float(person[1])
+						, "name": person[2] }
+			cur_uP.execute("INSERT INTO players (steamID, name, mew, sigma) VALUES \
+					( '%(steam)s', '%(name)s', %(mu)f, %(sigma)f )  " % data  )
+			
+			conn.commit()
+			cur_gP.close()
+			cur_uP.close()
+			return getPlayerSkill( steamID, conn )
 
 		cur_gP.execute("INSERT INTO players (steamID) VALUES ('%s') " % steamID)
 		conn.commit();cur_gP.close()
