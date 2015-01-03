@@ -40,6 +40,7 @@ try:
 	passwd = config.get('database','passwd')
 	datb = config.get('database','db')
 	min_clients = int(config.get('database','min_clients'))
+	logtf_enable = int( config.get( 'database', 'logsTF' ) )
 except:
 	logging.critical('Could not read configuration file')
 
@@ -61,20 +62,21 @@ def getPlayerSkill(steamID,conn):
 		for person in cur_gP:
 			cur_gP.close();
 			return float(person[0]), float(person[1])
-	
-		# check if was parsed by logsTF script
-		cur_gP.execute("SELECT mew, sigma, name, games  FROM players_logsTF where steamID = '%s'" % steamID)
-		for person in cur_gP:
-			cur_uP.execute("DELETE FROM players_logsTF where steamID = '%s'" % steamID)
-			data = { "steam": steamID, "mu" : float(person[0]), "sigma": float(person[1])
+		
+		if logtf_enable == 1:
+			# check if was parsed by logsTF script
+			cur_gP.execute("SELECT mew, sigma, name, games  FROM players_logsTF where steamID = '%s'" % steamID)
+			for person in cur_gP:
+				cur_uP.execute("DELETE FROM players_logsTF where steamID = '%s'" % steamID)
+				data = { "steam": steamID, "mu" : float(person[0]), "sigma": float(person[1])
 						, "name": person[2], "game": person[3]  }
-			cur_uP.execute("INSERT INTO players (steamID, name, mew, sigma, games) VALUES \
+				cur_uP.execute("INSERT INTO players (steamID, name, mew, sigma, games) VALUES \
 					( '%(steam)s', '%(name)s', %(mu)f, %(sigma)f, %(game)d  )  " % data  )
 			
-			conn.commit()
-			cur_gP.close()
-			cur_uP.close()
-			return getPlayerSkill( steamID, conn )
+				conn.commit()
+				cur_gP.close()
+				cur_uP.close()
+				return getPlayerSkill( steamID, conn )
 
 		cur_gP.execute("INSERT INTO players (steamID) VALUES ('%s') " % steamID)
 		conn.commit();cur_gP.close()
