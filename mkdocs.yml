@@ -1,6 +1,0 @@
-site_name: TF2 Skill
-site_author: Yusuf Ali
-site_favicon: favicon.ico
-repo_url: https://github.com/yusuf-a/tf2Skill
-theme: readthedocs
-theme_dir: 'docs/custom_theme'

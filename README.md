@@ -1,4 +1,5 @@
-#TF2 Skill
-###A TrueSkill implementation for Team Fortress 2
+# TF2 Skill
 
-For full documentation visit [tf2Skill.playtf2.com](http://tf2Skill.playtf2.com).
+**A TrueSkill implementation for Team Fortress 2**
+
+For full documentation visit [the wiki](http://git.yusufali.ca/yusuf_ali/tf2skill/wikis/home).
